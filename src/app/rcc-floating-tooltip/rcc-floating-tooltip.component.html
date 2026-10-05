@@ -1,0 +1,17 @@
+<div
+  class="rcc-float-tip"
+  role="tooltip"
+  [style.transform]="'translate3d(' + posX + 'px,' + posY + 'px,0)'"
+>
+  <header class="rcc-float-tip-head">
+    <span class="rcc-float-tip-dot" [class]="payload.accent || 'neutral'" aria-hidden="true"></span>
+    <span class="rcc-float-tip-title">{{ payload.title }}</span>
+  </header>
+  <dl class="rcc-float-tip-rows">
+    <div class="rcc-float-tip-row" *ngFor="let row of payload.rows" [class.muted]="row.muted">
+      <dt>{{ row.label }}</dt>
+      <dd>{{ row.value }}</dd>
+    </div>
+  </dl>
+  <p class="rcc-float-tip-foot" *ngIf="payload.footnote">{{ payload.footnote }}</p>
+</div>

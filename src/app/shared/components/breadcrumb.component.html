@@ -1,0 +1,50 @@
+<nav class="breadcrumb no-export" aria-label="Breadcrumb" *ngIf="crumbs.length">
+  <ol class="breadcrumb-list">
+    <li class="breadcrumb-item" *ngFor="let crumb of crumbs; let last = last">
+      <a class="breadcrumb-link" *ngIf="crumb.url; else plainCrumb" [routerLink]="crumb.url">
+        {{ crumb.label }}
+      </a>
+      <ng-template #plainCrumb>
+        <span class="breadcrumb-current" [attr.aria-current]="last ? 'page' : null">
+          {{ crumb.label }}
+        </span>
+      </ng-template>
+
+      <svg
+        *ngIf="!last"
+        class="breadcrumb-sep"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M9 18l6-6-6-6" />
+      </svg>
+    </li>
+  </ol>
+
+  <!-- Actions the current page registered (e.g. the GIS view's Export KMZ). -->
+  <div class="breadcrumb-actions" *ngIf="topbar.actions().length">
+    <button
+      type="button"
+      class="crumb-icon-btn"
+      *ngFor="let action of topbar.actions()"
+      [attr.title]="action.label"
+      [attr.aria-label]="action.label"
+      [disabled]="!!action.running?.()"
+      (click)="action.run($event)"
+    >
+      <span class="crumb-btn-spinner" *ngIf="action.running?.(); else actionIcon"></span>
+      <ng-template #actionIcon>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path [attr.d]="action.iconPath"/>
+        </svg>
+      </ng-template>
+    </button>
+  </div>
+</nav>

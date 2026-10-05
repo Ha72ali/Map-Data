@@ -1,0 +1,238 @@
+.report-export-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.report-export-dialog {
+  width: min(100%, 32rem);
+  max-height: min(85vh, 40rem);
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-elevated, #fff);
+  color: var(--text);
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.22);
+}
+
+.report-export-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.report-export-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.report-export-head p {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.report-export-close {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.report-export-close:hover:not(:disabled) {
+  background: var(--surface-muted, rgba(148, 163, 184, 0.15));
+  color: var(--text);
+}
+
+.report-export-body {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem 1.25rem;
+}
+
+.report-export-block + .report-export-block {
+  margin-top: 1.1rem;
+}
+
+.report-export-block h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.report-export-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.report-export-block-head h3 {
+  margin: 0;
+}
+
+.report-export-format-grid {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.report-export-format-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 0.1rem 0.55rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.report-export-format-card.is-selected {
+  border-color: var(--primary, #6366f1);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.report-export-format-card input {
+  grid-row: 1 / span 2;
+  margin-top: 0.15rem;
+}
+
+.report-export-format-label {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.report-export-format-hint {
+  grid-column: 2;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.report-export-quick-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.report-export-link {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary, #6366f1);
+  cursor: pointer;
+}
+
+.report-export-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.report-export-section-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.report-export-section-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.5rem 0.55rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.report-export-section-item:hover {
+  background: var(--surface-muted, rgba(148, 163, 184, 0.1));
+}
+
+.report-export-section-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.report-export-section-label {
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.report-export-section-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.report-export-error {
+  margin: 0.75rem 0 0;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.report-export-foot {
+  flex-shrink: 0;
+  padding: 0.85rem 1.25rem 1.1rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-elevated, #fff);
+  border-radius: 0 0 14px 14px;
+}
+
+.report-export-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 0.65rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.report-export-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(99, 102, 241, 0.25);
+  border-top-color: var(--primary, #6366f1);
+  border-radius: 50%;
+  animation: report-export-spin 0.7s linear infinite;
+}
+
+@keyframes report-export-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.report-export-foot-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

@@ -1,0 +1,98 @@
+﻿<div
+  *ngIf="open"
+  class="report-export-backdrop"
+  role="presentation"
+  (click)="onBackdropClick($event)"
+>
+  <div
+    class="report-export-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="report-export-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="report-export-head">
+      <div class="report-export-head-text">
+        <h2 id="report-export-title">Export dashboard report</h2>
+        <p>Uses data already loaded on this screen — no extra API calls.</p>
+      </div>
+      <button
+        type="button"
+        class="report-export-close"
+        aria-label="Close"
+        [disabled]="loading"
+        (click)="cancel()"
+      >
+        ×
+      </button>
+    </header>
+
+    <div class="report-export-body">
+      <section class="report-export-block" aria-labelledby="report-export-format-label">
+        <h3 id="report-export-format-label">Format</h3>
+        <div class="report-export-format-grid" role="radiogroup" aria-label="Export format">
+          <label
+            *ngFor="let opt of formatOptions"
+            class="report-export-format-card"
+            [class.is-selected]="format === opt.id"
+          >
+            <input
+              type="radio"
+              name="reportFormat"
+              [value]="opt.id"
+              [(ngModel)]="format"
+              [disabled]="loading"
+            />
+            <span class="report-export-format-label">{{ opt.label }}</span>
+            <span class="report-export-format-hint">{{ opt.hint }}</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="report-export-block" aria-labelledby="report-export-sections-label">
+        <div class="report-export-block-head">
+          <h3 id="report-export-sections-label">Include in report</h3>
+          <div class="report-export-quick-actions">
+            <button type="button" class="report-export-link" [disabled]="loading" (click)="selectAllSections()">
+              Select all
+            </button>
+            <button type="button" class="report-export-link" [disabled]="loading" (click)="clearSections()">
+              Clear
+            </button>
+          </div>
+        </div>
+        <ul class="report-export-section-list">
+          <li *ngFor="let opt of sectionOptions">
+            <label class="report-export-section-item">
+              <input
+                type="checkbox"
+                [checked]="sections[opt.key]"
+                [disabled]="loading"
+                (change)="onSectionToggle(opt.key, $any($event.target).checked)"
+              />
+              <span class="report-export-section-copy">
+                <span class="report-export-section-label">{{ opt.label }}</span>
+                <span class="report-export-section-hint">{{ opt.hint }}</span>
+              </span>
+            </label>
+          </li>
+        </ul>
+      </section>
+
+      <p *ngIf="errorMessage" class="report-export-error" role="alert">{{ errorMessage }}</p>
+    </div>
+
+    <footer class="report-export-foot">
+      <p *ngIf="loading" class="report-export-progress" role="status" aria-live="polite">
+        <span class="report-export-spinner" aria-hidden="true"></span>
+        {{ progressMessage || 'Generating report…' }}
+      </p>
+      <div class="report-export-foot-actions">
+        <button type="button" class="ghost-btn" [disabled]="loading" (click)="cancel()">Cancel</button>
+        <button type="button" class="primary-btn" [disabled]="!canExport" (click)="submit()">
+          {{ loading ? 'Generating…' : 'Download report' }}
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>

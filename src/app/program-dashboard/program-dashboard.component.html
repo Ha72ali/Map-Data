@@ -1,0 +1,147 @@
+<div class="pg">
+  <header class="pg-header">
+    <h1>Program Dashboard</h1>
+    <p class="pg-subtitle">
+      A centralized view of program performance, financial health, risks, and
+      progress across initiatives.
+    </p>
+  </header>
+
+  <!-- Row 1: Rollout Completion + Earned Value Analysis -->
+  <section class="pg-row-1">
+    <div class="rollout-col">
+      <h2 class="section-title">Rollout Completion</h2>
+      <div class="rollout-stack">
+        <div class="rollout-card">
+          <div class="rollout-number">{{ rollout.actual }}</div>
+          <div class="rollout-label">Actual</div>
+        </div>
+        <div class="rollout-card">
+          <div class="rollout-number">{{ rollout.planned }}</div>
+          <div class="rollout-label">Planned</div>
+        </div>
+        <div class="rollout-card">
+          <div class="rollout-number">{{ rollout.total }}</div>
+          <div class="rollout-label">Total</div>
+        </div>
+        <div class="rollout-card">
+          <div class="rollout-number">{{ rollout.projected }}</div>
+          <div class="rollout-label">Projected · {{ rollout.projectedLabel }}</div>
+        </div>
+        <div class="rollout-card rollout-card-balance">
+          <div class="rollout-number rollout-balance-value">{{ rollout.planned - rollout.actual }}</div>
+          <div class="rollout-label">Balance (Behind)</div>
+          <div class="rollout-balance-bar">
+            <div class="rollout-balance-bar-fill" [style.width.%]="(rollout.actual / rollout.planned) * 100"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="eva-col">
+      <h2 class="section-title">Earned Value Analysis</h2>
+      <div class="eva-grid">
+        <div
+          class="eva-card"
+          *ngFor="let card of earnedValue"
+        >
+          <div
+            class="eva-value"
+            [class.green]="card.color === 'green'"
+            [class.red]="card.color === 'red'"
+          >
+            {{ card.value }}
+          </div>
+          <div class="eva-label">{{ card.label }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Planned vs Actual Progress -->
+  <section class="pg-pva-section">
+    <h2 class="section-title">Planned Progress vs Actual Progress</h2>
+    <div class="pva-legend">
+      <span class="pva-legend-item"><span class="pva-dot pva-dot-planned"></span> Planned</span>
+      <span class="pva-legend-item"><span class="pva-dot pva-dot-actual"></span> Actual</span>
+    </div>
+    <div class="pva-chart" *ngIf="pvaData.length > 0 && !pvaLoading">
+      <div class="pva-bar-group" *ngFor="let b of pvaData">
+        <div class="pva-bars">
+          <div class="pva-bar pva-bar-planned" [style.height.%]="pvaBarHeight(b.plannedKm)" [title]="'Planned: ' + b.plannedKm + ' km'"></div>
+          <div class="pva-bar pva-bar-actual" [style.height.%]="pvaBarHeight(b.actualKm)" [title]="'Actual: ' + b.actualKm + ' km'"></div>
+        </div>
+        <span class="pva-period">{{ b.period }}</span>
+      </div>
+    </div>
+    <p class="chart-empty" *ngIf="pvaLoading">Loading...</p>
+  </section>
+
+  <!-- Row 2: Gauge Charts -->
+  <section class="pg-row-2">
+    <div class="gauge-card">
+      <div class="gauge-wrap">
+        <div class="gauge-arc"></div>
+        <div class="gauge-needle" [style.transform]="'rotate(' + cpiNeedleAngle + 'deg)'"></div>
+        <div class="gauge-labels">
+          <span>0</span>
+          <span>1</span>
+          <span>2</span>
+          <span>3</span>
+        </div>
+      </div>
+      <div class="gauge-reading">{{ gauges.cpi }}</div>
+      <div class="gauge-title">Cost Performance Index</div>
+    </div>
+
+    <div class="gauge-card">
+      <div class="gauge-wrap">
+        <div class="gauge-arc"></div>
+        <div class="gauge-needle" [style.transform]="'rotate(' + spiNeedleAngle + 'deg)'"></div>
+        <div class="gauge-labels">
+          <span>0</span>
+          <span>1</span>
+          <span>2</span>
+          <span>3</span>
+        </div>
+      </div>
+      <div class="gauge-reading">{{ gauges.spi }}</div>
+      <div class="gauge-title">Schedule Performance Index</div>
+    </div>
+  </section>
+
+  <!-- Row 3: Site Classification + Projects Table -->
+  <section class="pg-row-3">
+    <div class="sites-card">
+      <h2 class="section-title">Site Classification by Location</h2>
+      <div class="site-list">
+        <div class="site-row" *ngFor="let site of siteTypes">
+          <div class="site-label">{{ site.label }}</div>
+          <div class="site-count">{{ site.count }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="projects-card">
+      <h2 class="section-title">Projects</h2>
+      <table class="pg-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>On time</th>
+            <th>Delayed</th>
+            <th>Ahead of schedule</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of projects">
+            <td class="row-type">{{ row.type }}</td>
+            <td>{{ row.onTime }}</td>
+            <td>{{ row.delayed }}</td>
+            <td>{{ row.ahead }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

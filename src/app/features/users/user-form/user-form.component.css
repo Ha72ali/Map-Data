@@ -1,0 +1,22 @@
+.page-title {
+  margin: 0 0 20px;
+  font-size: 24px;
+  font-weight: 600;
+}
+.card {
+  max-width: 720px;
+}
+.row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.row mat-form-field {
+  flex: 1 1 280px;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}

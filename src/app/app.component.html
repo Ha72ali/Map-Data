@@ -1,0 +1,1765 @@
+<div
+  class="app"
+  [class.sidebar-collapsed]="!sidebarExpanded"
+  [class.handover-tab]="isHandoverTab"
+  [class.sidebar-mobile-open]="sidebarMobileOpen"
+>
+  <button
+    type="button"
+    class="sidebar-backdrop"
+    aria-label="Close navigation"
+    (click)="closeMobileSidebar()"
+  ></button>
+
+  <aside class="sidebar" aria-label="Primary navigation">
+    <header class="sidebar-top">
+      <div class="brand">
+        <div class="logo">
+          <svg width="36" height="36" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <circle cx="20" cy="20" r="18" stroke="#3b82f6" stroke-width="2" fill="none"/>
+            <circle cx="20" cy="20" r="12" stroke="#22c55e" stroke-width="1.5" fill="none"/>
+            <circle cx="20" cy="20" r="6" fill="#3b82f6"/>
+            <path d="M20 2 L20 8 M20 32 L20 38 M2 20 L8 20 M32 20 L38 20" stroke="#3b82f6" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="brand-copy">
+          <span class="logo-text">NEO<span class="logo-accent">TECX</span></span>
+          <span class="brand-title">FIBER DEPLOYMENT PLATFORM</span>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="sidebar-collapse-btn"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'"
+        [attr.title]="sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'"
+      >
+        <svg class="collapse-icon collapse-icon-expanded" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        <svg class="collapse-icon collapse-icon-collapsed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
+    </header>
+    <nav class="sidebar-nav nav" aria-label="Workspace">
+      <a class="nav-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" title="Dashboard" (click)="closeMobileSidebar()">
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a class="nav-item" routerLink="/gis-map" routerLinkActive="active" title="GIS Map" (click)="closeMobileSidebar()">
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </span>
+        <span class="nav-label">GIS Map</span>
+      </a>
+      <a class="nav-item" routerLink="/gallery" routerLinkActive="active" title="Gallery" (click)="closeMobileSidebar()">
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        </span>
+        <span class="nav-label">Gallery</span>
+      </a>
+      <!-- Removed from the sidebar on request: Rings, Links, Phases,
+           Daily Progress, Contractors, Alerts. Their routes are left
+           intact in app-routing.module.ts, so direct URLs still work. -->
+      <!-- <a class="nav-item" routerLink="/financial-dashboard" routerLinkActive="active" title="Financial Dashboard" (click)="closeMobileSidebar()">
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </span>
+        <span class="nav-label">Financial Dashboard</span>
+      </a> -->
+      <!-- Man-Hours removed: its route is commented out in app-routing.module.ts,
+           so the link fell through to the 404 wildcard. -->
+
+      <!-- Portal screens (role-gated). Not routes in this app — these hand the
+           browser to the main portal, which owns Segments / Contract /
+           Project. Mirrors neotecx_dashbaord_ui's header tabs. -->
+      <ng-container *ngIf="portalLinks.length">
+        <div class="nav-section-label">Portal</div>
+        <a
+          class="nav-item"
+          *ngFor="let link of portalLinks"
+          role="link"
+          tabindex="0"
+          [title]="link.label + ' (opens the portal)'"
+          (click)="openPortalLink(link.path); closeMobileSidebar()"
+          (keydown.enter)="openPortalLink(link.path); closeMobileSidebar()"
+        >
+          <span class="nav-icon" aria-hidden="true">
+            <svg *ngIf="link.icon === 'segments'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="8" y2="12"/><line x1="11" y1="12" x2="16" y2="12"/><line x1="19" y1="12" x2="21" y2="12"/><circle cx="9.5" cy="12" r="1.5"/><circle cx="17.5" cy="12" r="1.5"/>
+            </svg>
+            <svg *ngIf="link.icon === 'asbuilt'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            <svg *ngIf="link.icon === 'contract'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/>
+            </svg>
+            <svg *ngIf="link.icon === 'project'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="16" x2="13" y2="16"/>
+            </svg>
+          </span>
+          <span class="nav-label">{{ link.label }}</span>
+          <span class="nav-external" aria-hidden="true" title="Opens the portal">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+          </span>
+        </a>
+      </ng-container>
+
+      <!-- Administration (permission-gated) -->
+      <!-- <div class="nav-section-label" *appHasPermission="['User.View','Role.Manage']">Administration</div>
+
+      <a class="nav-item" routerLink="/admin/users" routerLinkActive="active" title="User Management" (click)="closeMobileSidebar()" *appHasPermission="'User.View'">
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span>
+        <span class="nav-label">User Management</span>
+      </a>
+
+      <a class="nav-item" routerLink="/admin/roles" routerLinkActive="active" title="Role Management" (click)="closeMobileSidebar()" *appHasPermission="'Role.Manage'">
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        </span>
+        <span class="nav-label">Role Management</span>
+      </a>
+
+      <a class="nav-item" routerLink="/profile" routerLinkActive="active" title="Profile" (click)="closeMobileSidebar()" *appHasPermission="'Profile.View'">
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
+        <span class="nav-label">Profile</span>
+      </a> -->
+    </nav>
+    <footer class="sidebar-footer">
+      <!-- Opened from the client dashboard's /contractors page: closing this
+           tab returns the user to it, still exactly where they left it. -->
+      <button type="button" class="sidebar-back-client" *ngIf="isHandoverTab"
+              title="Back to Client Dashboard" (click)="backToClient()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        <span class="nav-label">Back to Client Dashboard</span>
+      </button>
+
+      <!-- Logged-in user + logout -->
+      <div class="sidebar-user" *ngIf="auth.user()">
+        <a class="sidebar-user-main" routerLink="/profile" title="Profile" (click)="closeMobileSidebar()">
+          <span class="sidebar-user-avatar">{{ userInitials }}</span>
+          <span class="sidebar-user-copy">
+            <span class="nav-label sidebar-user-name">{{ userName }}</span>
+            <span class="nav-label sidebar-user-role">{{ userRole }}</span>
+          </span>
+        </a>
+        <button type="button" class="sidebar-logout" title="Logout" (click)="logout()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+
+      <div class="sidebar-system-status">
+        <div class="system-status-indicator">
+          <span class="status-dot status-dot-online"></span>
+          <span class="nav-label">System Status</span>
+        </div>
+        <div class="system-status-detail">
+          <span class="nav-label system-status-text">All Systems Operational</span>
+          <span class="nav-label system-status-uptime">Uptime: 99.88%</span>
+        </div>
+      </div>
+      <div class="sidebar-version">
+        <span class="nav-label">&copy; 2025 Neotecx</span>
+        <span class="nav-label">v2.3.0</span>
+      </div>
+    </footer>
+
+  </aside>
+
+  <main class="main">
+    <button
+      type="button"
+      class="sidebar-mobile-trigger"
+      (click)="toggleMobileSidebar()"
+      aria-label="Open navigation menu"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+
+    <!-- Ops header: title + execution controls (logic unchanged) -->
+    <header class="ops-header ops-header-refined" *ngIf="currentRoute === '/__legacy'" aria-label="Rollout workspace header">
+      <div class="ops-header-left">
+        <!-- <p class="ops-eyebrow" aria-hidden="true"></p> -->
+        <div class="ops-header-title-row">
+          <h1 class="ops-title">Fiber Rollout Dashboard</h1>
+          <!-- <span class="ops-env-pill ops-env-pill--reserved" title="Reporting window" aria-hidden="true"></span> -->
+        </div>
+        <!-- <p class="ops-subtitle">Ring pipelines, contractors, and field execution. Open Map for geospatial control.</p> -->
+      </div>
+      <div class="ops-header-actions">
+        <!-- Handover tab only. The sidebar Back button collapses to a bare icon
+             and the sidebar logout is hidden outright when the sidebar is
+             collapsed, so the way out has to live somewhere always visible. -->
+        <button
+          *ngIf="isHandoverTab"
+          type="button"
+          class="ops-back-client"
+          (click)="backToClient()"
+          title="Close this tab and return to the client dashboard"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+          Back to Client Dashboard
+        </button>
+        <div class="ops-header-center" aria-label="Workspace controls">
+        <button
+          class="theme-toggle theme-toggle-compact"
+          type="button"
+          (click)="toggleTheme()"
+          [attr.aria-label]="themeMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+          [attr.title]="themeMode === 'dark' ? 'Light mode' : 'Dark mode'"
+        >
+          <span class="theme-toggle-icon" aria-hidden="true">
+            <svg *ngIf="themeMode === 'light'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+            <svg *ngIf="themeMode === 'dark'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+          </span>
+        </button>
+        <div class="view-toggle view-toggle-compact" role="group" aria-label="Workspace view">
+          <button
+            class="toggle-btn"
+            [class.active]="view === 'dashboard'"
+            type="button"
+            (click)="setView('dashboard')"
+          >
+            Dashboard
+          </button>
+          <button
+            class="toggle-btn"
+            [class.active]="view === 'map'"
+            type="button"
+            (click)="setView('map')"
+          >
+            Map
+          </button>
+        </div>
+          <!-- Multi-select contractor dropdown -->
+          <div class="header-contractor-multiselect topbar-contractor" [class.active]="selectedContractorIds.length > 0">
+            <!-- Locked when the deployment has a single contractor. -->
+            <button type="button" class="header-contractor-control multiselect-trigger"
+                    [disabled]="isSingleContractorDeployment"
+                    [attr.aria-disabled]="isSingleContractorDeployment"
+                    [title]="isSingleContractorDeployment ? 'Only one contractor in this deployment' : ''"
+                    (click)="toggleContractorDropdown($event)" aria-label="Contractor filter">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>{{ contractorDropdownLabel }}</span>
+              <svg *ngIf="!isSingleContractorDeployment" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="chevron-down"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="multiselect-dropdown" *ngIf="contractorDropdownOpen && !isSingleContractorDeployment" (click)="$event.stopPropagation()">
+              <div class="multiselect-actions">
+                <button type="button" class="ms-action-btn" (click)="selectAllContractors()">Select All</button>
+                <button type="button" class="ms-action-btn" (click)="clearAllContractors()">Clear</button>
+              </div>
+              <label class="multiselect-option" *ngFor="let c of allContractors">
+                <input type="checkbox" [checked]="isContractorSelected(c.id)" (change)="toggleContractorSelection(c.id)" />
+                <span>{{ c.name }}</span>
+              </label>
+            </div>
+          </div>
+          <!-- Auto refresh toggle -->
+          <button
+            class="ghost-btn ghost-btn-compact auto-refresh-btn"
+            type="button"
+            [class.active]="autoRefreshEnabled"
+            (click)="toggleAutoRefresh()"
+            title="Auto-refresh every 5 minutes"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+            </svg>
+            Auto
+          </button>
+        </div>
+        <div class="ops-header-right ops-download-cluster" aria-label="Export actions">
+          <button class="ghost-btn ghost-btn-compact filter-modal-trigger" type="button" (click)="openFilterModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            Filters
+            <span class="filter-badge" *ngIf="activeFilterCount > 0">{{ activeFilterCount }}</span>
+          </button>
+          <button class="primary-btn primary-btn-compact" type="button" (click)="openReportExportModal()">Download Report</button>
+          <button
+            class="ghost-btn ghost-btn-compact topbar-kmz-btn"
+            type="button"
+            (click)="handleRoutesExport()"
+            [disabled]="exportInProgress"
+          >
+            {{ exportInProgress ? 'Preparing KMZ…' : 'Download KMZ' }}
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Filter Modal -->
+    <div class="filter-modal-backdrop" *ngIf="filterModalOpen" (click)="cancelFilterModal()"></div>
+    <div class="filter-modal" *ngIf="filterModalOpen">
+      <div class="filter-modal-header">
+        <h2 class="filter-modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Filters
+        </h2>
+        <button type="button" class="filter-modal-close" (click)="cancelFilterModal()" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="filter-modal-body">
+        <div class="filter-modal-grid">
+          <!-- Contractor -->
+          <div class="filter-modal-field">
+            <label class="filter-modal-label">CONTRACTOR</label>
+            <div class="filter-item filter-item-multiselect" [class.active]="selectedContractorIds.length > 0">
+              <!-- Single-contractor deployment: nothing to choose between, so
+                   the trigger is disabled and the sole contractor stays selected. -->
+              <button type="button" class="scope-filter-select ms-trigger-btn"
+                      [disabled]="isSingleContractorDeployment"
+                      [attr.aria-disabled]="isSingleContractorDeployment"
+                      [title]="isSingleContractorDeployment ? 'Only one contractor in this deployment' : ''"
+                      (click)="toggleFilterContractorDropdown($event)">
+                {{ filterContractorLabel }}
+                <svg *ngIf="!isSingleContractorDeployment" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="multiselect-dropdown filter-ms-dropdown" *ngIf="filterContractorDropdownOpen && !isSingleContractorDeployment" (click)="$event.stopPropagation()">
+                <div class="multiselect-actions">
+                  <button type="button" class="ms-action-btn" (click)="selectAllContractors()">Select All</button>
+                  <button type="button" class="ms-action-btn" (click)="clearAllContractors()">Clear</button>
+                </div>
+                <label class="multiselect-option" *ngFor="let c of allContractors">
+                  <input type="checkbox" [checked]="isContractorSelected(c.id)" (change)="toggleContractorSelection(c.id)" />
+                  <span>{{ c.name }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ring -->
+          <div class="filter-modal-field">
+            <label class="filter-modal-label">RING</label>
+            <div class="filter-item filter-item-multiselect" [class.active]="selectedRingIds.length > 0">
+              <button type="button" class="scope-filter-select ms-trigger-btn" (click)="toggleRingDropdown($event)">
+                {{ ringDropdownLabel }}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="multiselect-dropdown filter-ms-dropdown" *ngIf="ringDropdownOpen" (click)="$event.stopPropagation()">
+                <div class="multiselect-actions">
+                  <button type="button" class="ms-action-btn" (click)="selectAllRings()">Select All</button>
+                  <button type="button" class="ms-action-btn" (click)="clearAllRings()">Clear</button>
+                </div>
+                <label class="multiselect-option" *ngFor="let ring of filteredRings">
+                  <input type="checkbox" [checked]="isRingSelected(ring.id)" (change)="toggleRingSelection(ring.id)" />
+                  <span>{{ ring.name }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Link -->
+          <div class="filter-modal-field">
+            <label class="filter-modal-label">LINK</label>
+            <div class="filter-item filter-item-multiselect" [class.active]="selectedLinkIds.length > 0">
+              <button type="button" class="scope-filter-select ms-trigger-btn" (click)="toggleLinkDropdown($event)">
+                {{ linkDropdownLabel }}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="multiselect-dropdown filter-ms-dropdown" *ngIf="linkDropdownOpen" (click)="$event.stopPropagation()">
+                <div class="multiselect-actions">
+                  <button type="button" class="ms-action-btn" (click)="selectAllLinks()">Select All</button>
+                  <button type="button" class="ms-action-btn" (click)="clearAllLinks()">Clear</button>
+                </div>
+                <label class="multiselect-option" *ngFor="let link of filteredLinks">
+                  <input type="checkbox" [checked]="isLinkSelected(link.id)" (change)="toggleLinkSelection(link.id)" />
+                  <span>{{ link.name }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase -->
+          <div class="filter-modal-field">
+            <label class="filter-modal-label">PHASE</label>
+            <div class="filter-item" [class.active]="selectedStep && selectedStep !== 'ALL'">
+              <select class="scope-filter-select" [(ngModel)]="selectedStep">
+                <option value="ALL">All Phases</option>
+                <option *ngFor="let step of filteredSteps" [value]="step.id">{{ step.name }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="filter-modal-footer">
+        <button type="button" class="filter-modal-reset" (click)="resetFilters(); filterModalOpen = false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+          </svg>
+          Reset All
+        </button>
+        <div class="filter-modal-footer-right">
+          <button type="button" class="filter-modal-cancel" (click)="cancelFilterModal()">Cancel</button>
+          <button type="button" class="filter-modal-apply" (click)="applyFilterModal()">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <ng-container *ngIf="currentRoute === '/__legacy'">
+    <div *ngIf="exportError" class="alert danger export-alert">{{ exportError }}</div>
+
+    <div *ngIf="error" class="alert danger" data-testid="dashboard-error">{{ error }}</div>
+
+    <div class="global-loading-bar" *ngIf="loading" aria-label="Loading dashboard data">
+      <div class="global-loading-bar-fill"></div>
+    </div>
+
+    <section class="view view-dashboard" [class.active]="view === 'dashboard'">
+      <!-- Executive KPI row -->
+      <section class="kpi-hero-row" aria-label="Key performance indicators">
+        <div class="kpi-tile kpi-tile-accent">
+          <div class="kpi-tile-top">
+            <span class="kpi-tile-label">Rollout complete</span>
+            <span class="kpi-status-dot" [class.ok]="completionStatus === 'On track'" [class.warn]="completionStatus !== 'On track'" title="{{ completionStatus }}"></span>
+          </div>
+          <span class="kpi-tile-value">{{ formatNumber(completed, 'km') }} <span class="kpi-tile-value-sep">/</span> {{ formatNumber(totalPlanned, 'km') }}</span>
+          <div class="kpi-micro-track" aria-hidden="true">
+            <span class="kpi-micro-fill kpi-micro-fill-success" [style.width.%]="completionRate != null ? completionRate : 0"></span>
+          </div>
+          <span class="kpi-tile-meta" [class.kpi-meta-ok]="completionStatus === 'On track'" [class.kpi-meta-warn]="completionStatus !== 'On track'">{{ formatPercent(completionRate) }} · {{ completionStatus }}</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-tile-label">Active work</span>
+          <span class="kpi-tile-value">{{ formatNumber(inProgress, 'km') }}</span>
+          <div class="kpi-micro-track" aria-hidden="true">
+            <span class="kpi-micro-fill kpi-micro-fill-info" [style.width.%]="statusChartInProgressSharePct"></span>
+          </div>
+          <span class="kpi-tile-meta">In progress · {{ statusChartInProgressSharePct | number: '1.0-0' }}% active mix</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-tile-label">Balance</span>
+          <span class="kpi-tile-value">{{ formatNumber(pending, 'km') }}</span>
+          <div class="kpi-micro-track" aria-hidden="true">
+            <span
+              class="kpi-micro-fill kpi-micro-fill-muted"
+              [style.width.%]="(100 - statusChartCompletedPlanPct - statusChartInProgressPlanPct) > 0 ? (100 - statusChartCompletedPlanPct - statusChartInProgressPlanPct) : 0"
+            ></span>
+          </div>
+          <span class="kpi-tile-meta">Queued / not started</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-tile-label">Rings active</span>
+          <span class="kpi-tile-value kpi-tile-num">{{ ringProgressData.length }}</span>
+          <div class="kpi-micro-track kpi-micro-track-segments" aria-hidden="true">
+            <span class="kpi-micro-seg completed" [style.flex]="statusChartCompletedPlanPct || 1"></span>
+            <span class="kpi-micro-seg progress" [style.flex]="statusChartInProgressPlanPct || 1"></span>
+            <span
+              class="kpi-micro-seg remainder"
+              [style.flex]="(100 - statusChartCompletedPlanPct - statusChartInProgressPlanPct) > 0 ? (100 - statusChartCompletedPlanPct - statusChartInProgressPlanPct) : 1"
+            ></span>
+          </div>
+          <span class="kpi-tile-meta">Current scope</span>
+        </div>
+        <div class="kpi-tile">
+          <span class="kpi-tile-label">Contractors</span>
+          <span class="kpi-tile-value kpi-tile-num">{{ contractorChartData.length }}</span>
+          <span class="kpi-tile-meta">Field execution</span>
+        </div>
+      </section>
+
+      <!-- Segment count KPI row -->
+      <!-- <section class="segment-kpi-row" aria-label="Segment counts">
+        <div class="seg-kpi-card seg-kpi-total">
+          <span class="seg-kpi-value">{{ segmentCounts.total | number }}</span>
+          <span class="seg-kpi-label">TOTAL SEGMENTS</span>
+          <div class="seg-kpi-bar"><span class="seg-kpi-bar-fill seg-bar-total" style="width:100%"></span></div>
+        </div>
+        <div class="seg-kpi-card seg-kpi-completed">
+          <span class="seg-kpi-value">{{ segmentCounts.completed | number }}</span>
+          <span class="seg-kpi-label">COMPLETED</span>
+          <div class="seg-kpi-bar"><span class="seg-kpi-bar-fill seg-bar-completed" [style.width.%]="segmentCounts.total > 0 ? (segmentCounts.completed / segmentCounts.total) * 100 : 0"></span></div>
+        </div>
+        <div class="seg-kpi-card seg-kpi-inprogress">
+          <span class="seg-kpi-value">{{ segmentCounts.inProgress | number }}</span>
+          <span class="seg-kpi-label">IN PROGRESS</span>
+          <div class="seg-kpi-bar"><span class="seg-kpi-bar-fill seg-bar-inprogress" [style.width.%]="segmentCounts.total > 0 ? (segmentCounts.inProgress / segmentCounts.total) * 100 : 0"></span></div>
+        </div>
+        <div class="seg-kpi-card seg-kpi-pending">
+          <span class="seg-kpi-value">{{ segmentCounts.pending | number }}</span>
+          <span class="seg-kpi-label">PENDING</span>
+          <div class="seg-kpi-bar"><span class="seg-kpi-bar-fill seg-bar-pending" [style.width.%]="segmentCounts.total > 0 ? (segmentCounts.pending / segmentCounts.total) * 100 : 0"></span></div>
+        </div>
+        <div class="seg-kpi-card seg-kpi-blocked">
+          <span class="seg-kpi-value">{{ segmentCounts.blocked | number }}</span>
+          <span class="seg-kpi-label">BLOCKED</span>
+          <div class="seg-kpi-bar"><span class="seg-kpi-bar-fill seg-bar-blocked" [style.width.%]="segmentCounts.total > 0 ? (segmentCounts.blocked / segmentCounts.total) * 100 : 0"></span></div>
+        </div>
+      </section> -->
+
+      <div
+        class="rollout-command-center rollout-command-center-refined rcc-layout rcc-premium"
+        data-report-section="charts-graphs"
+        [class.rcc-has-hover]="!!rccHoverKey"
+      >
+        <header class="ops-center-head rcc-head">
+          <div class="rcc-head-copy">
+            <h2 class="ops-center-title">Rollout command center</h2>
+            <p class="ops-center-desc">Network rollout · ring execution · contractor performance</p>
+          </div>
+          <div class="rcc-head-meta">
+            <div class="rcc-meta-kpi" aria-hidden="true"></div>
+            <div class="rcc-meta-kpi rcc-meta-kpi-dim" aria-hidden="true"></div>
+          </div>
+        </header>
+
+        <div class="rcc-analytics-grid" aria-label="Rollout analytics overview">
+          <!-- Column 1: Overall progress -->
+          <section
+  class="rcc-col rcc-col-overall"
+  data-report-section="overall-progress"
+  aria-labelledby="rcc-overall-title"
+>
+
+  <header class="rcc-col-head">
+    <h3 id="rcc-overall-title" class="rcc-col-title">
+      Overall progress
+    </h3>
+
+    <span class="rcc-col-sub">
+      Network rollout
+    </span>
+  </header>
+
+  <div class="rcc-overall-stack">
+
+    <!-- HERO -->
+    <div class="rcc-overall-hero">
+
+      <div class="rcc-hero-kpi">
+
+        <div class="rcc-hero-line">
+
+          <span class="rcc-hero-value">
+            {{ formatPercent(completionRate) }}
+          </span>
+
+          <span
+            class="rcc-status-pill"
+            [class.rcc-status-ok]="completionStatus === 'On track'"
+            [class.rcc-status-warn]="completionStatus !== 'On track'"
+          >
+            {{ completionStatus }}
+          </span>
+
+        </div>
+
+        <span class="rcc-hero-label">
+          Rollout complete
+        </span>
+
+      </div>
+
+    </div>
+
+    <!-- MAIN CORE -->
+    <div class="rcc-overall-core">
+
+      <!-- PIE CHART WITH INFO -->
+      <div class="rcc-pie-info-wrap">
+        <div class="rcc-pie-wrap" tabindex="0" [attr.aria-label]="'Rollout ' + formatPercent(completionRate) + ' complete'">
+          <svg viewBox="0 0 140 140" class="rcc-pie-svg">
+            <circle cx="70" cy="70" r="52" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="18"/>
+            <circle cx="70" cy="70" r="52" fill="none" stroke="#22c55e" stroke-width="18"
+              [attr.stroke-dasharray]="(statusChartCompletedPlanPct / 100 * 326.73) + ' 326.73'"
+              stroke-dashoffset="0"
+              transform="rotate(-90 70 70)"
+              stroke-linecap="round"/>
+            <circle cx="70" cy="70" r="52" fill="none" stroke="#f59e0b" stroke-width="18"
+              [attr.stroke-dasharray]="(statusChartInProgressPlanPct / 100 * 326.73) + ' 326.73'"
+              [attr.stroke-dashoffset]="-(statusChartCompletedPlanPct / 100 * 326.73)"
+              transform="rotate(-90 70 70)"
+              stroke-linecap="round"/>
+            <circle cx="70" cy="70" r="52" fill="none" stroke="#94a3b8" stroke-width="18"
+              [attr.stroke-dasharray]="(statusChartPendingPlanPct / 100 * 326.73) + ' 326.73'"
+              [attr.stroke-dashoffset]="-((statusChartCompletedPlanPct + statusChartInProgressPlanPct) / 100 * 326.73)"
+              transform="rotate(-90 70 70)"
+              stroke-linecap="round"/>
+            <text x="70" y="65" text-anchor="middle" class="rcc-pie-center-value">{{ formatPercent(completionRate) }}</text>
+            <text x="70" y="82" text-anchor="middle" class="rcc-pie-center-label">Complete</text>
+          </svg>
+        </div>
+        <div class="rcc-pie-info-stats">
+          <div class="rcc-pie-stat-row">
+            <span class="rcc-pie-stat-dot" style="background:#22c55e"></span>
+            <span class="rcc-pie-stat-label">Completed</span>
+            <span class="rcc-pie-stat-value">{{ formatNumber(completed, 'km') }}</span>
+            <span class="rcc-pie-stat-pct">{{ statusChartCompletedPlanPct | number:'1.0-0' }}%</span>
+          </div>
+          <div class="rcc-pie-stat-row">
+            <span class="rcc-pie-stat-dot" style="background:#f59e0b"></span>
+            <span class="rcc-pie-stat-label">In Progress</span>
+            <span class="rcc-pie-stat-value">{{ formatNumber(inProgress, 'km') }}</span>
+            <span class="rcc-pie-stat-pct">{{ statusChartInProgressPlanPct | number:'1.0-0' }}%</span>
+          </div>
+          <div class="rcc-pie-stat-row">
+            <span class="rcc-pie-stat-dot" style="background:#94a3b8"></span>
+            <span class="rcc-pie-stat-label">Pending</span>
+            <span class="rcc-pie-stat-value">{{ formatNumber(pending, 'km') }}</span>
+            <span class="rcc-pie-stat-pct">{{ statusChartPendingPlanPct | number:'1.0-0' }}%</span>
+          </div>
+          <div class="rcc-pie-stat-row rcc-pie-stat-total">
+            <span class="rcc-pie-stat-dot" style="background:transparent; border:1px solid var(--muted)"></span>
+            <span class="rcc-pie-stat-label">Total Planned</span>
+            <span class="rcc-pie-stat-value">{{ formatNumber(totalPlanned, 'km') }}</span>
+            <span class="rcc-pie-stat-pct">100%</span>
+          </div>
+        </div>
+      </div>
+
+        <!-- PROGRESS PER DAY -->
+        <div class="rcc-progress-inline">
+
+          <div class="rcc-progress-inline-head">
+
+            <span class="rcc-progress-inline-title">
+              Progress / Day
+            </span>
+
+            <button
+              type="button"
+              class="rcc-co-reset rcc-progress-inline-sort"
+              [class.active]="sortByKmPerDay"
+              (click)="toggleProgressDaySort()"
+            >
+              Sort:
+              {{ sortByKmPerDay ? 'Km/Day' : 'Total km' }}
+            </button>
+
+          </div>
+
+          <div
+            class="rcc-progress-inline-list"
+            *ngIf="progressDayRows.length; else progressDayEmpty"
+          >
+
+            <div
+              class="rcc-progress-inline-row"
+              *ngFor="let r of progressDayRows"
+              [attr.title]="r.name + ' velocity: ' + (r.kmPerDay | number:'1.1-1') + ' km/day'"
+            >
+
+              <div class="rcc-progress-inline-identity">
+
+                <span
+                  class="rcc-progress-inline-dot"
+                  [style.background]="r.color"
+                ></span>
+
+                <span class="rcc-progress-inline-name">
+                  {{ r.name }}
+                </span>
+
+              </div>
+
+              <div class="rcc-progress-inline-velocity" aria-hidden="true">
+                <span
+                  class="rcc-progress-inline-fill"
+                  [class.ahead]="r.tone === 'ahead'"
+                  [class.close]="r.tone === 'close'"
+                  [class.behind]="r.tone === 'behind'"
+                  [style.width.%]="getProgressDayVelocityPct(r)"
+                  [style.--contractor-color]="r.color"
+                ></span>
+              </div>
+
+              <span class="rcc-progress-inline-value">
+                {{ r.kmPerDay | number:'1.1-1' }}
+                <small>km/day</small>
+              </span>
+
+              <span
+                class="rcc-progress-inline-trend"
+                [class.up]="r.trend === 'up'"
+                [class.flat]="r.trend === 'flat'"
+                [class.down]="r.trend === 'down'"
+                [attr.aria-label]="r.trend + ' trend'"
+              >
+                <ng-container *ngIf="r.trend === 'up'">&uarr;</ng-container>
+                <ng-container *ngIf="r.trend === 'flat'">&rarr;</ng-container>
+                <ng-container *ngIf="r.trend === 'down'">&darr;</ng-container>
+              </span>
+
+            </div>
+
+          </div>
+
+          <ng-template #progressDayEmpty>
+
+            <div class="rcc-progress-day-empty">
+              No progress/day data.
+            </div>
+
+          </ng-template>
+
+        </div>
+
+    </div>
+
+    <!-- ROLLOUT BAR -->
+    <div class="rcc-rollout-track">
+
+      <div
+        class="ring-stacked-bar rcc-rollout-bar rcc-interactive-bar"
+        role="group"
+        aria-label="Rollout mix"
+      >
+
+        <span
+          class="stack completed rcc-stack-seg"
+          [style.width.%]="statusChartCompletedPlanPct"
+        ></span>
+
+        <span
+          class="stack progress rcc-stack-seg"
+          [style.width.%]="statusChartInProgressPlanPct"
+        ></span>
+
+        <span
+          class="stack pending rcc-stack-seg"
+          [style.width.%]="statusChartPendingPlanPct"
+        ></span>
+
+      </div>
+
+      <div class="rcc-track-segments">
+
+        <span class="rcc-seg-label">
+          <span class="dot completed"></span>
+          Done
+        </span>
+
+        <span class="rcc-seg-label">
+          <span class="dot progress"></span>
+          Active
+        </span>
+
+        <span class="rcc-seg-label">
+          <span class="dot pending"></span>
+          Queued
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+<!-- ----------------------------------------------------------------------- -->
+          <!-- Column 2: Rings progress -->
+          <section class="rcc-col rcc-col-rings" data-report-section="ring-progress" aria-labelledby="rcc-rings-title">
+            <header class="rcc-col-head">
+              <h3 id="rcc-rings-title" class="rcc-col-title">Rings progress</h3>
+              <span class="rcc-col-sub">{{ ringProgressData.length }} rings</span>
+            </header>
+
+            <div class="rcc-rings-list">
+              <article
+                class="rcc-ring-row rcc-tip-target"
+                *ngFor="let ring of ringProgressData"
+                tabindex="0"
+                [class.rcc-row-active]="isRccHoverActive('ring:' + ring.id) || (rccHoverKey != null && rccHoverKey.startsWith('ring:' + ring.id + ':'))"
+                [class.rcc-row-dim]="isRccHoverDimmed('ring:', 'ring:' + ring.id)"
+                (mouseenter)="onRingRowEnter($event, ring)"
+                (mousemove)="moveRccTooltip($event)"
+                (mouseleave)="hideRccTooltip()"
+                (focus)="onRingRowEnter($event, ring)"
+                (blur)="hideRccTooltip()"
+              >
+                <div class="rcc-ring-head">
+                  <span class="ring-color-dot" [style.background]="ring.color"></span>
+                  <span class="rcc-ring-name">{{ ring.name }}</span>
+                  <span class="rcc-ring-pct">{{ getCompletionPct(ring) | number: '1.0-0' }}%</span>
+                </div>
+                <div class="ring-stacked-bar rcc-ring-bar rcc-interactive-bar" role="group" [attr.aria-label]="ring.name + ' progress'">
+                  <span
+                    class="stack completed rcc-stack-seg"
+                    tabindex="0"
+                    role="button"
+                    [style.width.%]="getCompletionPct(ring)"
+                    [class.rcc-seg-active]="isRccHoverActive('ring:' + ring.id + ':completed')"
+                    (mouseenter)="onRingSegmentEnter($event, ring, 'completed')"
+                    (mousemove)="moveRccTooltip($event)"
+                    (mouseleave)="hideRccTooltip()"
+                    (focus)="onRingSegmentEnter($event, ring, 'completed')"
+                    (blur)="hideRccTooltip()"
+                  ></span>
+                  <span
+                    class="stack progress rcc-stack-seg"
+                    tabindex="0"
+                    role="button"
+                    [style.width.%]="getInProgressPct(ring)"
+                    [class.rcc-seg-active]="isRccHoverActive('ring:' + ring.id + ':progress')"
+                    (mouseenter)="onRingSegmentEnter($event, ring, 'progress')"
+                    (mousemove)="moveRccTooltip($event)"
+                    (mouseleave)="hideRccTooltip()"
+                    (focus)="onRingSegmentEnter($event, ring, 'progress')"
+                    (blur)="hideRccTooltip()"
+                  ></span>
+                  <span
+                    class="stack pending rcc-stack-seg"
+                    tabindex="0"
+                    role="button"
+                    [style.width.%]="getPendingPct(ring)"
+                    [class.rcc-seg-active]="isRccHoverActive('ring:' + ring.id + ':pending')"
+                    (mouseenter)="onRingSegmentEnter($event, ring, 'pending')"
+                    (mousemove)="moveRccTooltip($event)"
+                    (mouseleave)="hideRccTooltip()"
+                    (focus)="onRingSegmentEnter($event, ring, 'pending')"
+                    (blur)="hideRccTooltip()"
+                  ></span>
+                  <span
+                    class="stack blocked rcc-stack-seg"
+                    tabindex="0"
+                    role="button"
+                    [style.width.%]="getBlockedPct(ring)"
+                    [class.rcc-seg-active]="isRccHoverActive('ring:' + ring.id + ':blocked')"
+                    (mouseenter)="onRingSegmentEnter($event, ring, 'blocked')"
+                    (mousemove)="moveRccTooltip($event)"
+                    (mouseleave)="hideRccTooltip()"
+                    (focus)="onRingSegmentEnter($event, ring, 'blocked')"
+                    (blur)="hideRccTooltip()"
+                  ></span>
+                </div>
+                <p class="rcc-ring-km">{{ ring.completedKm | number:'1.0-0' }} / {{ ring.totalKm | number:'1.0-0' }} km completed</p>
+              </article>
+            </div>
+
+            <div class="rcc-legend chart-legend compact">
+              <span><span class="dot completed"></span>Done</span>
+              <span><span class="dot progress"></span>Active</span>
+              <span><span class="dot pending"></span>Queued</span>
+              <span><span class="dot blocked"></span>Blocked</span>
+            </div>
+          </section>
+
+
+    
+      
+      
+          <!-- Column 3: Contractors — Vertical Bar Chart -->
+          <section class="rcc-col rcc-col-contractors" data-report-section="contractor-performance" aria-labelledby="rcc-contractors-title">
+            <header class="rcc-col-head rcc-col-head-contractors">
+              <div class="rcc-col-head-titles">
+                <h3 id="rcc-contractors-title" class="rcc-col-title">Contractors</h3>
+                <span class="rcc-col-sub">Top {{ contractorChartData.length > 5 ? 5 : contractorChartData.length }} · leaderboard</span>
+              </div>
+              <button
+                type="button"
+                class="rcc-co-reset"
+                *ngIf="selectedContractor !== 'ALL'"
+                (click)="resetContractorPanelFilter($event)"
+                aria-label="Show all contractors"
+              >
+                All contractors
+              </button>
+            </header>
+
+            <div class="rcc-vbar-chart" role="list">
+              <div
+                class="rcc-vbar-col"
+                *ngFor="let c of contractorChartData | slice:0:5; let i = index"
+                role="button"
+                tabindex="0"
+                [class.rcc-co-row-selected]="isContractorCardSelected(c)"
+                (click)="onContractorCardActivate($event, c)"
+                (mouseenter)="onContractorRowEnter($event, c)"
+                (mousemove)="moveRccTooltip($event)"
+                (mouseleave)="hideRccTooltip()"
+              >
+                <span class="rcc-vbar-pct">{{ getContractorCompletionPct(c) | number: '1.0-0' }}%</span>
+                <div class="rcc-vbar-track">
+                  <div class="rcc-vbar-fill"
+                    [style.height.%]="getContractorCompletionPct(c) > 100 ? 100 : getContractorCompletionPct(c)"
+                    [style.background]="c.color"
+                  ></div>
+                </div>
+                <span class="rcc-vbar-name">{{ c.name }}</span>
+                <span class="rcc-vbar-km">{{ c.completedKm | number:'1.0-0' }} km</span>
+                <span
+                  class="pill tiny rcc-vbar-status"
+                  [class.success]="c.onTime >= 75"
+                  [class.warning]="c.onTime >= 50 && c.onTime < 75"
+                  [class.danger]="c.onTime < 50"
+                >
+                  {{ c.onTime >= 75 ? 'On Track' : (c.onTime >= 50 ? 'At Risk' : 'Delayed') }}
+                </span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        
+
+        <app-rcc-floating-tooltip
+          *ngIf="rccTooltip"
+          [payload]="rccTooltip"
+          [x]="rccTooltipX"
+          [y]="rccTooltipY"
+        ></app-rcc-floating-tooltip>
+      </div>
+
+
+                <!-- ===== ROW 4: Progress Summary + Construction Execution Monitor (50/50) ===== -->
+      <section class="ops-grid-2">
+        <!-- Left: Work Progress — Donut Chart -->
+        <div class="ops-panel" data-report-section="progress-summary">
+          <div class="ops-panel-head">
+            <h3 class="ops-section-title">Work Progress</h3>
+            <div class="toolbar">
+              <label class="wp-select-label">Select Phase</label>
+              <select class="phase-select" [(ngModel)]="workProgressPhase" (change)="onWorkProgressPhaseChange()">
+                <option value="Trenching">Trenching</option>
+                <option value="Ducting">Ducting</option>
+                <option value="Final Backfilling">Final Backfilling</option>
+              </select>
+            </div>
+          </div>
+          <div class="progress-summary-loading" *ngIf="progressSummaryLoading">Loading...</div>
+          <div class="wp-donut-wrap" *ngIf="!progressSummaryLoading && wpTotalKm > 0">
+            <!-- Donut centered -->
+            <div class="wp-donut-container">
+              <svg viewBox="0 0 200 200" class="wp-donut-svg">
+                <circle cx="100" cy="100" r="75" fill="none" stroke="#1e1b4b" stroke-width="22" opacity="0.3"/>
+                <!-- Approved (Client) — green -->
+                <circle cx="100" cy="100" r="75" fill="none" stroke="#4ade80" stroke-width="22"
+                  [attr.stroke-dasharray]="wpDonutArc(wpApprovedKm) + ' ' + wpCircumference"
+                  [attr.stroke-dashoffset]="0"
+                  transform="rotate(-90 100 100)"
+                  class="wp-donut-seg" style="cursor:pointer"
+                  (mouseenter)="wpHover = 'approved'" (mouseleave)="wpHover = null"/>
+                <!-- Work Pending for Approval — orange -->
+                <circle cx="100" cy="100" r="75" fill="none" stroke="#fb923c" stroke-width="22"
+                  [attr.stroke-dasharray]="wpDonutArc(wpInProgressKm) + ' ' + wpCircumference"
+                  [attr.stroke-dashoffset]="'-' + wpDonutArc(wpApprovedKm)"
+                  transform="rotate(-90 100 100)"
+                  class="wp-donut-seg" style="cursor:pointer"
+                  (mouseenter)="wpHover = 'inprogress'" (mouseleave)="wpHover = null"/>
+                <!-- Pending — red -->
+                <circle cx="100" cy="100" r="75" fill="none" stroke="#f87171" stroke-width="22"
+                  [attr.stroke-dasharray]="wpDonutArc(wpPendingKm) + ' ' + wpCircumference"
+                  [attr.stroke-dashoffset]="'-' + (wpDonutArc(wpApprovedKm) + wpDonutArc(wpInProgressKm))"
+                  transform="rotate(-90 100 100)"
+                  class="wp-donut-seg" style="cursor:pointer"
+                  (mouseenter)="wpHover = 'pending'" (mouseleave)="wpHover = null"/>
+                <!-- Center text -->
+                <text x="100" y="96" text-anchor="middle" class="wp-donut-center-value">{{ wpTotalKm | number:'1.2-2' }} km</text>
+                <text x="100" y="114" text-anchor="middle" class="wp-donut-center-label">Total Length: {{ workProgressPhase }}</text>
+              </svg>
+              <!-- Hover tooltip -->
+              <div class="wp-tooltip" *ngIf="wpHover === 'approved'">
+                <span class="wp-tooltip-dot" style="background:#4ade80"></span>
+                <strong>Approved (Client)</strong>
+                <span>{{ wpApprovedKm | number:'1.2-2' }} km ({{ wpApprovedPct | number:'1.2-2' }}%)</span>
+              </div>
+              <div class="wp-tooltip" *ngIf="wpHover === 'inprogress'">
+                <span class="wp-tooltip-dot" style="background:#fb923c"></span>
+                <strong>Work Pending for Approval</strong>
+                <span>{{ wpInProgressKm | number:'1.2-2' }} km ({{ wpInProgressPct | number:'1.2-2' }}%)</span>
+              </div>
+              <div class="wp-tooltip" *ngIf="wpHover === 'pending'">
+                <span class="wp-tooltip-dot" style="background:#f87171"></span>
+                <strong>Pending</strong>
+                <span>{{ wpPendingKm | number:'1.2-2' }} km ({{ wpPendingPct | number:'1.2-2' }}%)</span>
+              </div>
+            </div>
+
+            <!-- Stats at bottom -->
+            <div class="wp-stats-bottom">
+              <div class="wp-stat-item" [class.wp-stat-active]="wpHover === 'approved'"
+                (mouseenter)="wpHover = 'approved'" (mouseleave)="wpHover = null">
+                <span class="wp-stat-dot" style="background:#4ade80"></span>
+                <span class="wp-stat-number">{{ wpApprovedKm | number:'1.2-2' }} km</span>
+                <span class="wp-stat-label">Approved ({{ wpApprovedPct | number:'1.0-0' }}%)</span>
+              </div>
+              <div class="wp-stat-item" [class.wp-stat-active]="wpHover === 'inprogress'"
+                (mouseenter)="wpHover = 'inprogress'" (mouseleave)="wpHover = null">
+                <span class="wp-stat-dot" style="background:#fb923c"></span>
+                <span class="wp-stat-number">{{ wpInProgressKm | number:'1.2-2' }} km</span>
+                <span class="wp-stat-label">Pending Approval ({{ wpInProgressPct | number:'1.0-0' }}%)</span>
+              </div>
+              <div class="wp-stat-item" [class.wp-stat-active]="wpHover === 'pending'"
+                (mouseenter)="wpHover = 'pending'" (mouseleave)="wpHover = null">
+                <span class="wp-stat-dot" style="background:#f87171"></span>
+                <span class="wp-stat-number">{{ wpPendingKm | number:'1.2-2' }} km</span>
+                <span class="wp-stat-label">Pending ({{ wpPendingPct | number:'1.0-0' }}%)</span>
+              </div>
+            </div>
+          </div>
+          <p class="chart-empty" *ngIf="!progressSummaryLoading && wpTotalKm === 0">No progress data available.</p>
+        </div>
+
+        <!-- Right: Construction Execution Monitor (Rings-style list) -->
+        <div class="ops-panel" data-report-section="construction-pipeline" aria-labelledby="exec-monitor-title">
+          <div class="ops-panel-head">
+            <div>
+              <h3 id="exec-monitor-title" class="ops-section-title">Construction Execution Monitor</h3>
+              <p class="exec-monitor-subtitle">Operational tracking by rollout phase</p>
+            </div>
+            <span class="rcc-col-sub">{{ stepPipelineStageCount }} stages · {{ stepPipelineTotalSegments }} segments</span>
+          </div>
+
+          <div class="exec-rings-list" *ngIf="stepProgressData.length; else execMonitorEmpty">
+            <article class="rcc-ring-row" *ngFor="let step of stepProgressData; let i = index">
+              <div class="rcc-ring-head">
+                <span class="ring-color-dot" [style.background]="getStepColor(i)"></span>
+                <span class="rcc-ring-name">{{ step.name }}</span>
+                <ng-container *ngIf="getStepExecutionStatus(step) as execStatus">
+                  <span class="exec-status-badge exec-status-badge-sm"
+                    [class.exec-status-badge--track]="execStatus.tone === 'track'"
+                    [class.exec-status-badge--active]="execStatus.tone === 'active'"
+                    [class.exec-status-badge--attention]="execStatus.tone === 'attention'"
+                    [class.exec-status-badge--blocked]="execStatus.tone === 'blocked'">
+                    {{ execStatus.label }}
+                  </span>
+                </ng-container>
+                <span class="rcc-ring-pct" style="margin-left:auto">{{ getStepCompletedPct(step) | number:'1.0-0' }}%</span>
+              </div>
+              <div class="ring-stacked-bar rcc-ring-bar">
+                <span class="stack" [style.width.%]="getStepCompletedPct(step)" [style.background]="getStepColor(i)"></span>
+                <span class="stack" [style.width.%]="getStepInProgressPct(step)" style="background:#fb923c"></span>
+                <span class="stack" [style.width.%]="getStepPendingPct(step)" style="background:#334155"></span>
+                <span class="stack" [style.width.%]="getStepBlockedPct(step)" style="background:#f87171"></span>
+              </div>
+              <p class="rcc-ring-km">
+                <span class="exec-metric-inline"><strong>{{ step.completed }}</strong> Done</span>
+                <span class="exec-metric-inline exec-metric-active"><strong>{{ step.inProgress }}</strong> Active</span>
+                <span class="exec-metric-inline"><strong>{{ step.pending }}</strong> Queued</span>
+              </p>
+            </article>
+          </div>
+          <ng-template #execMonitorEmpty>
+            <p class="exec-monitor-empty">No construction steps in the current scope.</p>
+          </ng-template>
+
+          <div class="rcc-legend chart-legend compact" aria-label="Progress legend">
+            <span><span class="dot completed"></span>Completed</span>
+            <span><span class="dot progress"></span>Active</span>
+            <span><span class="dot pending"></span>Queued</span>
+            <span><span class="dot blocked"></span>Blocked</span>
+          </div>
+        </div>
+      </section>
+
+     
+      <!-- ===== ROW 3: Planned vs Actual (line) + PAC Status (donut) ===== -->
+      <section class="ops-grid-2">
+        <!-- Planned vs Actual — Combined Line Chart -->
+        <div class="ops-panel" *ngIf="plannedVsActualData.length > 1; else pvaEmptySection">
+          <div class="ops-panel-head">
+            <h3 class="ops-section-title">Planned vs Actual Progress</h3>
+            <div class="toolbar">
+              <div class="view-toggle view-toggle-compact" role="group">
+                <button class="toggle-btn" [class.active]="plannedVsActualGranularity === 'monthly'" type="button" (click)="plannedVsActualGranularity = 'monthly'; onGranularityChange()">Monthly</button>
+                <button class="toggle-btn" [class.active]="plannedVsActualGranularity === 'weekly'" type="button" (click)="plannedVsActualGranularity = 'weekly'; onGranularityChange()">Weekly</button>
+              </div>
+            </div>
+          </div>
+          <div class="pva-chart-wrap">
+            <svg viewBox="0 0 560 220" class="pva-line-svg" preserveAspectRatio="xMidYMid meet">
+              <line x1="50" x2="540" y1="175" y2="175" stroke="var(--border)" stroke-width="1"/>
+              <line x1="50" x2="50" y1="15" y2="175" stroke="var(--border)" stroke-width="1"/>
+              <line *ngFor="let tick of [0.25, 0.5, 0.75, 1]" x1="50" x2="540" [attr.y1]="175 - tick * 150" [attr.y2]="175 - tick * 150" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4,4" opacity="0.3"/>
+              <text *ngFor="let tick of [0.25, 0.5, 0.75, 1]" x="46" [attr.y]="179 - tick * 150" text-anchor="end" class="pva-axis-label">{{ (pvaMaxKm * tick) | number:'1.0-0' }}</text>
+              <path [attr.d]="pvaCombinedAreaPath('planned')" fill="#93c5fd" opacity="0.12"/>
+              <path [attr.d]="pvaCombinedLinePath('planned')" fill="none" stroke="#93c5fd" stroke-width="2.5"/>
+              <circle *ngFor="let b of plannedVsActualData; let i = index" [attr.cx]="pvaCombinedX(i)" [attr.cy]="pvaCombinedY(b.plannedKm)" r="3.5" fill="#93c5fd" stroke="var(--surface)" stroke-width="1.5"/>
+              <path [attr.d]="pvaCombinedAreaPath('actual')" fill="#3b82f6" opacity="0.12"/>
+              <path [attr.d]="pvaCombinedLinePath('actual')" fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+              <circle *ngFor="let b of plannedVsActualData; let i = index" [attr.cx]="pvaCombinedX(i)" [attr.cy]="pvaCombinedY(b.actualKm)" r="3.5" fill="#3b82f6" stroke="var(--surface)" stroke-width="1.5"/>
+              <text *ngFor="let lbl of pvaXLabels" [attr.x]="pvaCombinedX(lbl.i)" y="195" text-anchor="middle" class="pva-axis-label">{{ lbl.label }}</text>
+            </svg>
+            <div class="chart-legend compact">
+              <span><span class="dot" style="background:#93c5fd"></span>Planned (km)</span>
+              <span><span class="dot" style="background:#3b82f6"></span>Actual (km)</span>
+            </div>
+          </div>
+        </div>
+        <ng-template #pvaEmptySection>
+          <div class="ops-panel">
+            <div class="ops-panel-head">
+              <h3 class="ops-section-title">Planned vs Actual Progress</h3>
+            </div>
+            <p class="chart-empty">No planned vs actual data available.</p>
+          </div>
+        </ng-template>
+
+        <!-- PAC Status — Donut with inline stats -->
+        <div class="ops-panel">
+          <div class="ops-panel-head">
+            <h3 class="ops-section-title">PAC Status</h3>
+            <span class="ops-pill">Provisional Acceptance</span>
+          </div>
+          <div class="pac-combined-wrap" *ngIf="pacTotal > 0; else pacEmpty">
+            <div class="pac-combined-chart">
+              <svg viewBox="0 0 120 120" class="pac-donut-svg">
+                <circle cx="60" cy="60" r="45" fill="none" stroke="#e2e8f0" stroke-width="14"/>
+                <circle cx="60" cy="60" r="45" fill="none" stroke="#22c55e" stroke-width="14"
+                  [attr.stroke-dasharray]="pacDonutLength('approved') + ' ' + (2 * 3.14159 * 45)"
+                  [attr.stroke-dashoffset]="pacDonutOffset('approved')"
+                  transform="rotate(-90 60 60)"/>
+                <circle cx="60" cy="60" r="45" fill="none" stroke="#f59e0b" stroke-width="14"
+                  [attr.stroke-dasharray]="pacDonutLength('pending') + ' ' + (2 * 3.14159 * 45)"
+                  [attr.stroke-dashoffset]="pacDonutOffset('pending')"
+                  transform="rotate(-90 60 60)"/>
+                <circle cx="60" cy="60" r="45" fill="none" stroke="#ef4444" stroke-width="14"
+                  [attr.stroke-dasharray]="pacDonutLength('rejected') + ' ' + (2 * 3.14159 * 45)"
+                  [attr.stroke-dashoffset]="pacDonutOffset('rejected')"
+                  transform="rotate(-90 60 60)"/>
+                <text x="60" y="56" text-anchor="middle" class="pac-donut-center-value">{{ pacTotal }}</text>
+                <text x="60" y="72" text-anchor="middle" class="pac-donut-center-label">Total</text>
+              </svg>
+            </div>
+            <div class="pac-combined-stats">
+              <div class="pac-stat-row pac-stat-submitted">
+                <span class="pac-stat-value">{{ pacSummary.totalSubmitted }}</span>
+                <span class="pac-stat-label">Submitted</span>
+              </div>
+              <div class="pac-stat-row pac-stat-approved">
+                <span class="pac-stat-dot" style="background:#22c55e"></span>
+                <span class="pac-stat-value">{{ pacSummary.approved }}</span>
+                <span class="pac-stat-label">Approved</span>
+              </div>
+              <div class="pac-stat-row pac-stat-pending">
+                <span class="pac-stat-dot" style="background:#f59e0b"></span>
+                <span class="pac-stat-value">{{ pacSummary.pending }}</span>
+                <span class="pac-stat-label">Pending</span>
+              </div>
+              <div class="pac-stat-row pac-stat-rejected">
+                <span class="pac-stat-dot" style="background:#ef4444"></span>
+                <span class="pac-stat-value">{{ pacSummary.rejected }}</span>
+                <span class="pac-stat-label">Rejected</span>
+              </div>
+            </div>
+          </div>
+          <ng-template #pacEmpty>
+            <p class="chart-empty">No PAC data available.</p>
+          </ng-template>
+          <div class="pac-loading-indicator" *ngIf="pacLoading">Loading PAC data...</div>
+        </div>
+      </section>
+
+      <!-- ===== NEW CHART 1: Contractor Completion Bars + Status Waterfall ===== -->
+      <section class="ops-grid-2" *ngIf="contractorChartData.length > 0">
+        <!-- Left: Contractor Completion horizontal stacked bars -->
+        <div class="ops-panel">
+          <div class="ops-panel-head">
+            <h3 class="ops-section-title">Contractor Completion</h3>
+            <span class="ops-pill">Stacked bars</span>
+          </div>
+          <svg [attr.viewBox]="'0 0 500 ' + (contractorChartData.length * 38 + 20)" preserveAspectRatio="xMidYMid meet" class="chart-svg-responsive">
+            <ng-container *ngFor="let c of contractorChartData; let i = index">
+              <text [attr.x]="10" [attr.y]="i * 38 + 24" class="contractor-bar-label" text-anchor="start">{{ c.name }}</text>
+              <!-- completed -->
+              <rect [attr.x]="130" [attr.y]="i * 38 + 10" [attr.width]="getContractorBarWidth(c, 'completed', 300)" height="20" rx="2" fill="#22c55e"/>
+              <!-- inProgress -->
+              <rect [attr.x]="130 + getContractorBarWidth(c, 'completed', 300)" [attr.y]="i * 38 + 10" [attr.width]="getContractorBarWidth(c, 'inProgress', 300)" height="20" rx="0" fill="#3b82f6"/>
+              <!-- pending -->
+              <rect [attr.x]="130 + getContractorBarWidth(c, 'completed', 300) + getContractorBarWidth(c, 'inProgress', 300)" [attr.y]="i * 38 + 10" [attr.width]="getContractorBarWidth(c, 'pending', 300)" height="20" rx="2" fill="#94a3b8"/>
+              <!-- percentage label -->
+              <text [attr.x]="445" [attr.y]="i * 38 + 24" class="contractor-bar-pct" text-anchor="start">{{ getContractorCompletionPct(c) | number:'1.0-0' }}%</text>
+            </ng-container>
+          </svg>
+          <div class="chart-legend compact">
+            <span><span class="dot" style="background:#22c55e"></span>Completed</span>
+            <span><span class="dot" style="background:#3b82f6"></span>In Progress</span>
+            <span><span class="dot" style="background:#94a3b8"></span>Pending</span>
+          </div>
+        </div>
+
+        <!-- Right: Status Distribution waterfall bars -->
+        <div class="ops-panel">
+          <div class="ops-panel-head">
+            <h3 class="ops-section-title">Status Distribution</h3>
+            <span class="ops-pill">Waterfall</span>
+          </div>
+          <svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet" class="chart-svg-responsive">
+            <line x1="30" x2="280" y1="165" y2="165" stroke="var(--border)" stroke-width="1"/>
+            <ng-container *ngFor="let bar of statusWaterfallBars; let i = index">
+              <rect [attr.x]="50 + i * 60" [attr.y]="165 - bar.height" width="40" [attr.height]="bar.height" rx="3" [attr.fill]="bar.color"/>
+              <text [attr.x]="70 + i * 60" [attr.y]="158 - bar.height" text-anchor="middle" class="waterfall-value">{{ bar.value | number:'1.0-0' }}</text>
+              <text [attr.x]="70 + i * 60" y="180" text-anchor="middle" class="waterfall-label">{{ bar.label }}</text>
+            </ng-container>
+          </svg>
+        </div>
+      </section>
+
+   
+
+      <!-- ===== ROW 5: Contractor Performance Table ===== -->
+      <section class="ops-panel ops-panel-table">
+        <div class="ops-panel-head">
+          <h3 class="ops-section-title">Contractor performance</h3>
+          <div class="toolbar">
+            <button class="ghost-btn" type="button">Export</button>
+          </div>
+        </div>
+        <table class="table table-ops table-ops-dense">
+          <thead>
+            <tr>
+              <th>Contractor</th>
+              <th>Total km</th>
+              <th>Completed km</th>
+              <th>In Progress km</th>
+              <th>Pending km</th>
+              <th>% Done</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of contractorChartData">
+              <td>
+                <span class="table-contractor">
+                  <span class="ring-color-dot" [style.background]="c.color"></span>
+                  {{ c.name }}
+                </span>
+              </td>
+              <td>{{ c.totalKm | number:'1.0-1' }} km</td>
+              <td>{{ c.completedKm | number:'1.0-1' }} km</td>
+              <td>{{ c.inProgressKm | number:'1.0-1' }} km</td>
+              <td>{{ c.pendingKm | number:'1.0-1' }} km</td>
+              <td>{{ getContractorCompletionPct(c) | number: '1.0-0' }}%</td>
+              <td>
+                <span class="pill tiny" [class.success]="c.onTime >= 75" [class.warning]="c.onTime >= 50 && c.onTime < 75" [class.danger]="c.onTime < 50">
+                  {{ c.onTime >= 75 ? 'On Track' : (c.onTime >= 50 ? 'At Risk' : 'Delayed') }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ===== NEW CHART 2: Phase Completion Radar + Daily Velocity Gauge ===== -->
+      <section class="ops-grid-2" *ngIf="stepProgressData.length > 0">
+        <!-- Left: Phase Completion Radar -->
+        <div class="ops-panel">
+          <div class="ops-panel-head">
+            <h3 class="ops-section-title">Phase Completion Radar</h3>
+            <span class="ops-pill">Spider chart</span>
+          </div>
+          <svg viewBox="0 0 300 280" preserveAspectRatio="xMidYMid meet" class="chart-svg-responsive">
+            <!-- Outer boundary polygon (100%) -->
+            <polygon [attr.points]="radarOuterPoints" fill="none" stroke="var(--border)" stroke-width="1" opacity="0.4"/>
+            <!-- 50% ring -->
+            <polygon [attr.points]="radarMidPoints" fill="none" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="3,3" opacity="0.3"/>
+            <!-- Axis lines -->
+            <line *ngFor="let step of stepProgressData; let i = index"
+              x1="150" y1="130"
+              [attr.x2]="radarAxisX(i)" [attr.y2]="radarAxisY(i)"
+              stroke="var(--border)" stroke-width="0.5" opacity="0.3"/>
+            <!-- Actual data polygon -->
+            <polygon [attr.points]="radarDataPoints" fill="#3b82f6" fill-opacity="0.2" stroke="#3b82f6" stroke-width="2"/>
+            <!-- Data points -->
+            <circle *ngFor="let step of stepProgressData; let i = index"
+              [attr.cx]="radarDataX(i)" [attr.cy]="radarDataY(i)"
+              r="3.5" fill="#3b82f6" stroke="var(--surface)" stroke-width="1.5"/>
+            <!-- Labels -->
+            <text *ngFor="let step of stepProgressData; let i = index"
+              [attr.x]="radarLabelX(i)" [attr.y]="radarLabelY(i)"
+              text-anchor="middle" class="radar-label">{{ step.name }}</text>
+          </svg>
+        </div>
+
+        <!-- Right: Daily Velocity Gauge -->
+        <div class="ops-panel">
+          <div class="ops-panel-head">
+            <h3 class="ops-section-title">Daily Velocity</h3>
+            <span class="ops-pill">Gauge</span>
+          </div>
+          <div class="gauge-wrap">
+            <svg viewBox="0 0 260 160" preserveAspectRatio="xMidYMid meet" class="chart-svg-responsive">
+              <!-- Background arc -->
+              <path d="M 30 140 A 100 100 0 0 1 230 140" fill="none" stroke="var(--border)" stroke-width="18" stroke-linecap="round" opacity="0.3"/>
+              <!-- Colored arc -->
+              <path [attr.d]="gaugeArcPath" fill="none" stroke="#3b82f6" stroke-width="18" stroke-linecap="round"/>
+              <!-- Needle -->
+              <line x1="130" y1="140" [attr.x2]="gaugeNeedleX" [attr.y2]="gaugeNeedleY" stroke="var(--text)" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="130" cy="140" r="5" fill="var(--text)"/>
+              <!-- Min / Max labels -->
+              <text x="30" y="155" text-anchor="middle" class="gauge-label">0</text>
+              <text x="230" y="155" text-anchor="middle" class="gauge-label">{{ gaugeMax | number:'1.0-0' }}</text>
+              <!-- Center value -->
+              <text x="130" y="125" text-anchor="middle" class="gauge-value">{{ avgKmPerDay | number:'1.1-1' }}</text>
+              <text x="130" y="138" text-anchor="middle" class="gauge-unit">km/day avg</text>
+            </svg>
+          </div>
+          <div class="gauge-contractor-list">
+            <div class="gauge-contractor-row" *ngFor="let r of progressDayRows">
+              <span class="gauge-contractor-dot" [style.background]="r.color"></span>
+              <span class="gauge-contractor-name">{{ r.name }}</span>
+              <span class="gauge-contractor-val">{{ r.kmPerDay | number:'1.1-1' }} km/day</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ROW 6: Ring Pie Chart + Bottlenecks ===== -->
+      <section class="ops-grid-2" *ngIf="ringProgressData.length > 0">
+        <div class="ops-panel">
+          <div class="ops-panel-head">
+            <h3 class="ops-section-title">Ring-wise Contribution</h3>
+            <span class="ops-pill">Pie chart</span>
+          </div>
+          <div class="ring-pie-wrap">
+            <svg viewBox="0 0 120 120" class="ring-pie-svg">
+              <circle cx="60" cy="60" r="45" fill="none" stroke="#e2e8f0" stroke-width="14"/>
+              <circle *ngFor="let ring of ringProgressData; let i = index"
+                cx="60" cy="60" r="45" fill="none"
+                [attr.stroke]="ring.color"
+                stroke-width="14"
+                [attr.stroke-dasharray]="ringPieSliceLength(i) + ' ' + (2 * 3.14159 * 45)"
+                [attr.stroke-dashoffset]="ringPieSliceOffset(i)"
+                transform="rotate(-90 60 60)"
+                style="cursor:pointer"
+                (click)="drillDownToRing(ring.id)"/>
+            </svg>
+            <div class="ring-pie-legend chart-legend compact">
+              <span *ngFor="let ring of ringProgressData">
+                <span class="dot" [style.background]="ring.color"></span>
+                {{ ring.name }} ({{ ring.completedKm | number:'1.0-0' }} km)
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="ops-panel">
+          <div class="ops-panel-head">
+            <h3 class="ops-section-title">Top bottlenecks</h3>
+            <span class="pill danger" *ngIf="bottleneckItems.length > 0">{{ bottleneckItems.length }} issues</span>
+          </div>
+          <ul class="bottlenecks" *ngIf="bottleneckItems.length > 0; else noBottlenecks">
+            <li *ngFor="let item of bottleneckItems">
+              <span class="b-title">{{ item.title }}</span>
+              <span class="b-meta">{{ item.meta }}</span>
+              <span class="pill" [class.blocked]="item.severity === 'blocked'" [class.warning]="item.severity === 'warning'" [class.info]="item.severity === 'info'">
+                {{ item.severity === 'blocked' ? 'Blocked' : (item.severity === 'warning' ? 'At Risk' : 'Info') }}
+              </span>
+            </li>
+          </ul>
+          <ng-template #noBottlenecks>
+            <p class="chart-empty">No bottlenecks detected — all items on track.</p>
+          </ng-template>
+        </div>
+      </section>
+
+      <!-- ===== ROW 7: Ring × Contractor Heatmap (full width) ===== -->
+      <section class="ops-panel" *ngIf="ringProgressData.length > 0">
+        <div class="ops-panel-head">
+          <h3 class="ops-section-title">Ring × Contractor Matrix</h3>
+          <span class="ops-pill">Completion heatmap</span>
+        </div>
+        <div class="heatmap-wrap">
+          <table class="heatmap-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th *ngFor="let c of contractorChartData" class="heatmap-col-header">
+                  <span>{{ c.name }}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of ringContractorMatrix">
+                <td class="heatmap-row-label">{{ row.ring }}</td>
+                <td
+                  *ngFor="let cell of row.contractors"
+                  class="heatmap-cell"
+                  [style.background]="getHeatColor(cell.pct)"
+                  [style.color]="getHeatTextColor(cell.pct)"
+                >
+                  {{ cell.pct > 0 ? (cell.pct + '%') : '&ndash;' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="heatmap-legend">
+          <span class="heatmap-legend-item" style="--hc: #fee2e2">{{ '<' }}30%</span>
+          <span class="heatmap-legend-item" style="--hc: #fef3c7">30-50%</span>
+          <span class="heatmap-legend-item" style="--hc: #e0f2fe">50-70%</span>
+          <span class="heatmap-legend-item" style="--hc: #d1fae5">70-85%</span>
+          <span class="heatmap-legend-item" style="--hc: #bbf7d0">85%+</span>
+        </div>
+      </section>
+
+      <!-- ===== NEW CHART 3: Ring Completion Grouped Bars + Contractor Score Bullets ===== -->
+      <section class="ops-grid-2" *ngIf="ringProgressData.length > 0">
+        <!-- Left: Ring Completion grouped vertical bars -->
+        <div class="ops-panel">
+          <div class="ops-panel-head">
+            <h3 class="ops-section-title">Ring Completion</h3>
+            <span class="ops-pill">Grouped bars</span>
+          </div>
+          <svg viewBox="0 0 500 220" preserveAspectRatio="xMidYMid meet" class="chart-svg-responsive">
+            <line x1="40" x2="480" y1="180" y2="180" stroke="var(--border)" stroke-width="1"/>
+            <ng-container *ngFor="let ring of ringProgressData; let i = index">
+              <!-- planned (light) -->
+              <rect [attr.x]="60 + i * ringGroupBarSpacing" [attr.y]="180 - getRingBarHeight(ring.totalKm, 150)" width="16" [attr.height]="getRingBarHeight(ring.totalKm, 150)" rx="2" [attr.fill]="ring.color" opacity="0.3"/>
+              <!-- completed (solid) -->
+              <rect [attr.x]="78 + i * ringGroupBarSpacing" [attr.y]="180 - getRingBarHeight(ring.completedKm, 150)" width="16" [attr.height]="getRingBarHeight(ring.completedKm, 150)" rx="2" [attr.fill]="ring.color"/>
+              <!-- label -->
+              <text [attr.x]="68 + i * ringGroupBarSpacing + 8" y="196" text-anchor="middle" class="ring-group-label">{{ ring.name.length > 8 ? ring.name.substring(0,8) + '..' : ring.name }}</text>
+            </ng-container>
+          </svg>
+          <div class="chart-legend compact">
+            <span><span class="dot" style="background:var(--muted);opacity:0.3"></span>Planned</span>
+            <span><span class="dot" style="background:var(--text)"></span>Completed</span>
+          </div>
+        </div>
+
+        <!-- Right: Contractor On-Time Score bullet chart -->
+        <div class="ops-panel">
+          <div class="ops-panel-head">
+            <h3 class="ops-section-title">Contractor On-Time Score</h3>
+            <span class="ops-pill">Bullet chart</span>
+          </div>
+          <svg [attr.viewBox]="'0 0 500 ' + (contractorChartData.length * 36 + 20)" preserveAspectRatio="xMidYMid meet" class="chart-svg-responsive">
+            <ng-container *ngFor="let c of contractorChartData; let i = index">
+              <text [attr.x]="10" [attr.y]="i * 36 + 22" class="contractor-bar-label" text-anchor="start">{{ c.name }}</text>
+              <!-- background track -->
+              <rect [attr.x]="130" [attr.y]="i * 36 + 8" width="300" height="18" rx="3" fill="var(--border)" opacity="0.3"/>
+              <!-- filled bar -->
+              <rect [attr.x]="130" [attr.y]="i * 36 + 8" [attr.width]="c.onTime * 3" height="18" rx="3" [attr.fill]="c.onTime >= 75 ? '#22c55e' : c.onTime >= 50 ? '#f59e0b' : '#ef4444'"/>
+              <!-- target line at 75% -->
+              <line [attr.x1]="130 + 225" [attr.y1]="i * 36 + 5" [attr.x2]="130 + 225" [attr.y2]="i * 36 + 29" stroke="var(--text)" stroke-width="2" stroke-dasharray="3,2"/>
+              <!-- value -->
+              <text [attr.x]="445" [attr.y]="i * 36 + 22" class="contractor-bar-pct" text-anchor="start">{{ c.onTime }}%</text>
+            </ng-container>
+          </svg>
+          <div class="chart-legend compact">
+            <span><span class="dot" style="background:var(--text)"></span>Target 75%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== NEW CHART 4: Segment Status Treemap ===== -->
+      <section class="ops-panel" *ngIf="segmentCounts.total > 0">
+        <div class="ops-panel-head">
+          <h3 class="ops-section-title">Segment Status Overview</h3>
+          <span class="ops-pill">Treemap</span>
+        </div>
+        <svg viewBox="0 0 800 100" preserveAspectRatio="xMidYMid meet" class="chart-svg-treemap">
+          <ng-container *ngFor="let block of treemapBlocks; let i = index">
+            <rect [attr.x]="block.x" y="5" [attr.width]="block.width" height="85" rx="6" [attr.fill]="block.color" opacity="0.85"/>
+            <text [attr.x]="block.x + block.width / 2" y="35" text-anchor="middle" class="treemap-label">{{ block.label }}</text>
+            <text [attr.x]="block.x + block.width / 2" y="58" text-anchor="middle" class="treemap-count">{{ block.count | number }}</text>
+            <text [attr.x]="block.x + block.width / 2" y="75" text-anchor="middle" class="treemap-pct">{{ block.pct | number:'1.0-0' }}%</text>
+          </ng-container>
+        </svg>
+      </section>
+
+      <!-- ===== ROW 8: Link Execution ===== -->
+      <section class="ops-panel" *ngIf="linkProgressData.length > 0">
+        <div class="ops-panel-head">
+          <h3 class="ops-section-title">Link execution</h3>
+          <span class="ops-pill">{{ linkProgressData.length }} links</span>
+        </div>
+        <div class="link-progress-list">
+          <div class="link-progress-row" *ngFor="let link of linkProgressData">
+            <div class="link-info">
+              <span class="link-name">{{ link.name }}</span>
+              <span class="link-ring-tag">{{ link.ringName }}</span>
+            </div>
+            <div class="link-bar-wrap">
+              <div class="link-bar-track">
+                <div class="link-bar-fill" [style.width.%]="link.completedPct" [class]="getLinkStatusClass(link.status)"></div>
+              </div>
+              <div class="link-bar-meta">
+                <span class="link-bar-pct">{{ link.completedPct }}%</span>
+                <span class="pill tiny {{ getLinkStatusClass(link.status) }}">{{ getLinkStatusLabel(link.status) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span *ngIf="snapshot?.fetchedAt">
+          Updated {{ snapshot?.fetchedAt | date: 'short' }}
+        </span>
+        <span>Data source: Field updates + contractor reports</span>
+      </footer>
+    </section>
+
+    <section class="view view-map" [class.active]="view === 'map'">
+      <div class="map-layout">
+        <aside class="map-sidebar">
+          <div class="map-card">
+            <div class="map-card-title">Contractors</div>
+            <div class="mini-list map-contractor-pick-list" *ngIf="contractorChartData.length">
+              <button
+                type="button"
+                class="map-contractor-pick"
+                *ngFor="let c of contractorChartData.slice(0, 12)"
+                [class.active]="isContractorCardSelected(c)"
+                (click)="onMapSidebarContractorPick(c)"
+              >
+                <span class="map-contractor-pick-name">{{ c.name }}</span>
+                <span
+                  class="pill"
+                  [class.success]="c.delayed <= 5"
+                  [class.warning]="c.delayed > 5 && c.delayed <= 15"
+                  [class.blocked]="c.delayed > 15"
+                  >{{ c.delayed > 15 ? 'Needs attention' : (c.delayed > 5 ? 'Watch' : 'On track') }}</span>
+              </button>
+            </div>
+            <p *ngIf="!contractorChartData.length" class="map-sidebar-note">Load dashboard data to see contractors.</p>
+          </div>
+        </aside>
+
+        <div class="map-canvas">
+          <div class="map-toolbar">
+            <input
+              class="search"
+              placeholder="Override contractor code (optional)"
+              [(ngModel)]="mapContractorCode"
+              (ngModelChange)="onMapContractorOverrideChange()"
+              title="When empty, the header contractor (if any) and ring/link filters are sent to the map API"
+            />
+            <label class="map-toggle">
+              <input type="checkbox" [checked]="mapShowRouteElements" (change)="toggleMapRouteElements()" />
+              Route elements
+            </label>
+            <div class="map-actions">
+              <button
+                class="ghost-btn"
+                type="button"
+                (click)="reloadMapGeoJson()"
+                [disabled]="mapGeoJsonLoading"
+              >
+                {{ mapGeoJsonLoading ? 'Loading…' : 'Refresh map' }}
+              </button>
+            </div>
+          </div>
+          <div *ngIf="mapGeoJsonError" class="alert danger map-geo-alert">{{ mapGeoJsonError }}</div>
+          <div *ngIf="mapGeoJsonInfo && !mapGeoJsonError" class="alert info map-geo-alert">{{ mapGeoJsonInfo }}</div>
+          <div class="map-stage" #mapStage [class.map-stage-fullscreen]="mapIsFullscreen" [class.map-stage-layers-ready]="mapRouteLayersReady">
+            <div
+              class="map-stage-busy map-stage-shimmer"
+              *ngIf="mapEsriBooting || mapGeoJsonLoading"
+              aria-busy="true"
+              aria-live="polite"
+            >
+              <div class="map-loader-panel">
+                <div class="map-loader-bar" aria-hidden="true"></div>
+                <span class="map-loader-label">{{ mapEsriBooting ? 'Starting GIS map…' : 'Loading contractor routes…' }}</span>
+                <span class="map-loader-hint" *ngIf="mapGeoJsonLoading && !mapEsriBooting">Loading GIS routes</span>
+              </div>
+            </div>
+            <nav class="map-floating-controls" aria-label="Map navigation">
+              <button type="button" class="map-ctrl-btn" title="Zoom in" aria-label="Zoom in" (click)="mapZoomIn()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <button type="button" class="map-ctrl-btn" title="Zoom out" aria-label="Zoom out" (click)="mapZoomOut()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <button
+                type="button"
+                class="map-ctrl-btn"
+                title="Fit Oman extent"
+                aria-label="Fit Oman extent"
+                (click)="mapResetBounds()"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+              </button>
+              <button
+                type="button"
+                class="map-ctrl-btn"
+                [title]="mapIsFullscreen ? 'Exit fullscreen' : 'Fullscreen'"
+                [attr.aria-label]="mapIsFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
+                [attr.aria-pressed]="mapIsFullscreen"
+                (click)="toggleMapFullscreen()"
+              >
+                <svg *ngIf="!mapIsFullscreen" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                <svg *ngIf="mapIsFullscreen" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+              </button>
+              <div class="map-basemap-wrap">
+                <button
+                  type="button"
+                  class="map-ctrl-btn map-ctrl-btn-basemap"
+                  title="Basemap style"
+                  aria-label="Basemap style"
+                  [attr.aria-expanded]="mapBasemapMenuOpen"
+                  (click)="toggleMapBasemapMenu($event)"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                  <span class="map-ctrl-basemap-label">{{ activeMapBasemapLabel }}</span>
+                </button>
+                <div class="map-basemap-menu" *ngIf="mapBasemapMenuOpen" role="menu" (click)="$event.stopPropagation()">
+                  <button
+                    type="button"
+                    *ngFor="let opt of rolloutBasemapOptions"
+                    class="map-basemap-option"
+                    role="menuitemradio"
+                    [attr.aria-checked]="mapBasemapStyle === opt.id"
+                    [class.active]="mapBasemapStyle === opt.id"
+                    (click)="selectMapBasemap(opt.id, $event)"
+                  >
+                    <span class="map-basemap-option-label">{{ opt.label }}</span>
+                    <span class="map-basemap-option-hint">{{ opt.hint }}</span>
+                  </button>
+                </div>
+              </div>
+            </nav>
+            <div #mapHost class="esri-map-host"></div>
+            <div class="map-legend map-legend-gis">
+              <span class="map-legend-title">Rollout GIS</span>
+              <span><span class="legend-swatch legend-region"></span>Operational region</span>
+              <span><span class="legend-line legend-backbone"></span>Backbone route</span>
+              <span><span class="legend-line legend-rollout"></span>Active rollout</span>
+              <span><span class="legend-line legend-planned"></span>Planned route</span>
+              <span><span class="legend-line legend-element"></span>Route element</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="map-details">
+          <div class="map-card">
+            <div class="map-card-title">Feature detail</div>
+            <ng-container *ngIf="mapSelectedFeatureProps">
+              <div class="detail-row" *ngFor="let kv of mapDetailEntries">
+                <span>{{ kv[0] }}</span><strong>{{ kv[1] }}</strong>
+              </div>
+            </ng-container>
+            <p *ngIf="!mapSelectedFeatureProps && !mapGeoJsonLoading" class="map-sidebar-note">
+              Click a route on the map to see properties from GeoJSON.
+            </p>
+            <p *ngIf="mapGeoJsonLoading" class="map-sidebar-note">Loading map data…</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    </ng-container>
+
+    <app-breadcrumb></app-breadcrumb>
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Neo Chat Assistant -->
+  <div class="neo-chat-fab" [class.open]="chatOpen" (click)="toggleChat()">
+    <svg *ngIf="!chatOpen" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    <svg *ngIf="chatOpen" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </div>
+
+  <div class="neo-chat-panel" [class.visible]="chatOpen">
+    <div class="neo-chat-header">
+      <div class="neo-chat-header-left">
+        <div class="neo-avatar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
+            <path d="M6 10v1a6 6 0 0 0 12 0v-1"/>
+            <line x1="12" y1="17" x2="12" y2="22"/>
+            <line x1="8" y1="22" x2="16" y2="22"/>
+          </svg>
+        </div>
+        <div>
+          <div class="neo-chat-title">Neo Assistant</div>
+          <div class="neo-chat-subtitle">AI-powered dashboard insights</div>
+        </div>
+      </div>
+      <button class="neo-chat-clear" type="button" (click)="clearChat()" title="Clear chat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1 4 1 10 7 10"/>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="neo-chat-body" #chatScrollContainer>
+      <div *ngFor="let msg of chatMessages" class="neo-msg" [class.neo-msg-user]="msg.role === 'user'" [class.neo-msg-assistant]="msg.role === 'assistant'">
+        <div class="neo-msg-avatar" *ngIf="msg.role === 'assistant'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
+            <path d="M6 10v1a6 6 0 0 0 12 0v-1"/>
+          </svg>
+        </div>
+        <div class="neo-msg-bubble" [innerHTML]="msg.content"></div>
+      </div>
+
+      <div class="neo-msg neo-msg-assistant" *ngIf="chatLoading">
+        <div class="neo-msg-avatar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
+            <path d="M6 10v1a6 6 0 0 0 12 0v-1"/>
+          </svg>
+        </div>
+        <div class="neo-msg-bubble neo-typing">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <div class="neo-suggestions" *ngIf="chatSuggestions.length > 0 && !chatLoading && (chatMessages.length <= 1 || chatMessages[chatMessages.length - 1]?.role === 'assistant')">
+        <button *ngFor="let s of chatSuggestions" class="neo-suggestion-chip" type="button" (click)="sendChat(s)">
+          {{ s }}
+        </button>
+      </div>
+    </div>
+
+    <div class="neo-chat-footer">
+      <div class="neo-chat-input-wrap">
+        <input
+          class="neo-chat-input"
+          type="text"
+          placeholder="Ask about the dashboard..."
+          [(ngModel)]="chatInput"
+          (keydown)="handleChatKeydown($event)"
+          [disabled]="chatLoading"
+        />
+        <button
+          class="neo-send-btn"
+          type="button"
+          (click)="sendChat()"
+          [disabled]="!chatInput.trim() || chatLoading"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+      <div class="neo-chat-powered">Powered by NEO<span>X</span>TECH AI</div>
+    </div>
+  </div>
+
+  <app-report-export-modal
+    [open]="reportExportModalOpen"
+    [loading]="reportExportInProgress"
+    [progressMessage]="reportExportProgressMessage"
+    [errorMessage]="reportExportError"
+    (closed)="closeReportExportModal()"
+    (confirmed)="handleReportExport($event)"
+  ></app-report-export-modal>
+</div>

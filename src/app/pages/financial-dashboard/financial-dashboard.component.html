@@ -1,0 +1,1290 @@
+<div class="fin-dashboard">
+  <!-- Global Tooltip -->
+  <div class="fin-tooltip" *ngIf="tooltip.visible"
+       [style.left.px]="tooltip.x + 12" [style.top.px]="tooltip.y - 10">
+    <div class="fin-tooltip-title">{{ tooltip.title }}</div>
+    <div *ngFor="let line of tooltip.lines" class="fin-tooltip-line">{{ line }}</div>
+  </div>
+
+  <!-- Welcome Header -->
+  <div class="fin-header">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div>
+        <h1 class="fin-welcome">Financial Overview</h1>
+        <p class="fin-subtitle">Portfolio-level summary across all active construction projects</p>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <!-- Notification Bell -->
+      <div class="fin-notif-wrapper">
+        <button class="fin-notif-btn" (click)="toggleFinNotifications($event)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          <span class="fin-notif-badge" *ngIf="recentActivities.length > 0">{{ recentActivities.length }}</span>
+        </button>
+        <!-- Notification Popup -->
+        <div class="fin-notif-popup" *ngIf="showFinNotifications" (click)="$event.stopPropagation()">
+          <div class="fin-notif-popup-header">
+            <h4>Recent Activities</h4>
+            <button class="fin-notif-close" (click)="showFinNotifications = false">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="fin-notif-list">
+            <div *ngFor="let activity of recentActivities" class="fin-notif-item">
+              <div class="fin-notif-icon" [style.backgroundColor]="activity.color + '20'" [style.color]="activity.color">
+                <svg *ngIf="activity.icon === 'order'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                <svg *ngIf="activity.icon === 'project'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <svg *ngIf="activity.icon === 'payment'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                <svg *ngIf="activity.icon === 'invoice'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </div>
+              <div class="fin-notif-content">
+                <span class="fin-notif-title">{{ activity.title }}</span>
+                <span class="fin-notif-time">{{ activity.time }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="fin-notif-footer">
+            <a class="view-all-link">View All Activities</a>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-tertiary);font-weight:500">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        FY 2024
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="fin-kpi-row">
+    <div *ngFor="let card of kpiCards" class="fin-kpi-card" [ngClass]="'kpi-' + card.color"
+         (mouseenter)="showTooltip($event, card.title, [card.value, (card.direction === 'up' ? '+' : '-') + card.change + '% vs last month'])"
+         (mousemove)="moveTooltip($event)"
+         (mouseleave)="hideTooltip()">
+      <div class="kpi-header">
+        <div class="kpi-icon-wrap" [ngClass]="'kpi-icon-' + card.color">
+          <svg *ngIf="card.color === 'blue'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/></svg>
+          <svg *ngIf="card.color === 'purple'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <svg *ngIf="card.color === 'green'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <svg *ngIf="card.color === 'red'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-title">{{ card.title }}</span>
+          <span class="kpi-value">{{ card.value }}</span>
+        </div>
+      </div>
+      <div class="kpi-footer">
+        <span class="kpi-change" [ngClass]="card.direction === 'up' ? 'change-up' : 'change-down'">
+          <svg *ngIf="card.direction === 'up'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>
+          <svg *ngIf="card.direction === 'down'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          {{ card.change }}%
+        </span>
+        <span class="kpi-vs">vs last month</span>
+      </div>
+      <div class="kpi-sparkline">
+        <svg viewBox="0 0 120 40" preserveAspectRatio="none">
+          <path *ngIf="card.direction === 'up'" d="M0,35 Q15,30 25,28 T50,20 T75,15 T100,10 T120,5" fill="none" stroke="currentColor" stroke-width="2" opacity="0.4"/>
+          <path *ngIf="card.direction === 'down'" d="M0,10 Q15,12 25,18 T50,22 T75,28 T100,32 T120,35" fill="none" stroke="currentColor" stroke-width="2" opacity="0.4"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row: Revenue Area Chart + Top Sub Contractors + Recent Activities -->
+  <div class="fin-middle-row">
+    <!-- Revenue Area Chart -->
+    <div class="fin-card fin-revenue-card">
+      <div class="card-header">
+        <h3 class="card-title">Revenue Overview</h3>
+        <select class="card-select" [value]="revenueMonth" (change)="onRevenueFilterChange($any($event.target).value)">
+          <option>Weekly</option>
+          <option>Monthly</option>
+          <option>Quarterly</option>
+          <option>Half Yearly</option>
+          <option>Yearly</option>
+        </select>
+      </div>
+      <div class="revenue-legend">
+        <span class="legend-item"><span class="legend-line solid"></span> Revenue Earned</span>
+        <span class="legend-item"><span class="legend-line dashed"></span> Projected</span>
+      </div>
+      <div class="revenue-chart">
+        <div class="chart-y-axis">
+          <span *ngFor="let label of revenueYLabels">{{ label }}</span>
+        </div>
+        <div class="chart-area">
+          <svg viewBox="0 0 500 200" preserveAspectRatio="none" class="chart-svg">
+            <line x1="0" y1="0" x2="500" y2="0" stroke="var(--border)" stroke-width="0.5" opacity="0.3"/>
+            <line x1="0" y1="50" x2="500" y2="50" stroke="var(--border)" stroke-width="0.5" opacity="0.3"/>
+            <line x1="0" y1="100" x2="500" y2="100" stroke="var(--border)" stroke-width="0.5" opacity="0.3"/>
+            <line x1="0" y1="150" x2="500" y2="150" stroke="var(--border)" stroke-width="0.5" opacity="0.3"/>
+            <line x1="0" y1="200" x2="500" y2="200" stroke="var(--border)" stroke-width="0.5" opacity="0.3"/>
+            <path [attr.d]="revenueSvgPath" fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+            <path [attr.d]="revenueAreaPath" fill="url(#revenueGradient)" opacity="0.15"/>
+            <path [attr.d]="projectedSvgPath" fill="none" stroke="var(--text-tertiary)" stroke-width="1.5" stroke-dasharray="6,4"/>
+            <circle [attr.cx]="revenueDotX" [attr.cy]="revenueDotY" r="5" fill="#3b82f6"/>
+            <defs>
+              <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="chart-tooltip" [style.left.%]="(revenueDotX / 500) * 100" [style.top.%]="(revenueDotY / 200) * 100 - 15">
+            <span class="tooltip-date">{{ revenueTooltipLabel }}</span>
+            <span class="tooltip-value">{{ revenueTooltipValue }}</span>
+          </div>
+        </div>
+        <div class="chart-x-axis">
+          <span *ngFor="let label of activeRevenueData.labels">{{ label }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Sub Contractors -->
+    <div class="fin-card fin-products-card">
+      <div class="card-header">
+        <h3 class="card-title">Subcontractors Overview</h3>
+        <select class="card-select" [value]="productsMonth" (change)="onProductsMonthChange($any($event.target).value)">
+          <option>This Month</option>
+          <option>Last Month</option>
+        </select>
+      </div>
+      <!-- Column Headers -->
+      <div class="products-header">
+        <span class="ph-name">Contractor</span>
+        <span class="ph-col">Total PO</span>
+        <span class="ph-col">PO Invoiced</span>
+        <span class="ph-col">Amount</span>
+        <span class="ph-col ph-pct">%</span>
+      </div>
+      <div class="products-list">
+        <div *ngFor="let contractor of topContractors" class="product-item"
+             (mouseenter)="showTooltip($event, contractor.name, ['Amount: ' + contractor.amount, 'Total PO: ' + contractor.totalPO, 'PO Invoiced: ' + contractor.poInvoiced + ' (' + contractor.invoicedPercent + '%)', 'Share: ' + contractor.percent + '%'])"
+             (mousemove)="moveTooltip($event)"
+             (mouseleave)="hideTooltip()">
+          <div class="product-icon-wrap" [style.backgroundColor]="contractor.color">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="product-info">
+            <span class="product-name">{{ contractor.name }}</span>
+            <div class="product-bar-track">
+              <div class="product-bar-fill" [style.width.%]="contractor.invoicedPercent" [style.backgroundColor]="contractor.color"></div>
+            </div>
+          </div>
+          <span class="product-col">{{ contractor.totalPO }}</span>
+          <span class="product-col">{{ contractor.poInvoiced }}</span>
+          <span class="product-amount">{{ contractor.amount }}</span>
+          <span class="product-percent">{{ contractor.invoicedPercent }}%</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Performance Dashboard Header -->
+  <div class="fin-perf-header">
+    <h2 class="perf-title">Performance Dashboard</h2>
+    <div class="perf-filters">
+      <div class="perf-filter">
+        <label>Period:</label>
+        <select class="card-select" [value]="selectedTimePeriod" (change)="onTimePeriodChange($any($event.target).value)">
+          <option>Weekly</option>
+          <option>Monthly</option>
+          <option>3 Months</option>
+          <option>6 Months</option>
+          <option>Yearly</option>
+        </select>
+      </div>
+      <div class="perf-filter">
+        <label>Year:</label>
+        <select class="card-select" [value]="selectedYear" (change)="onYearChange($any($event.target).value)">
+          <option>2024</option><option>2023</option><option>2022</option>
+        </select>
+      </div>
+      <div class="perf-filter">
+        <label>Project Type:</label>
+        <select class="card-select" [value]="selectedProjectType" (change)="onProjectTypeChange($any($event.target).value)">
+          <option>All</option><option>Commercial</option><option>Residential</option><option>Infrastructure</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sales Revenue (Vertical Grouped Bar) + Payment (Waterfall style) -->
+  <div class="fin-perf-row">
+    <!-- Sales Revenue: Vertical Grouped Bar -->
+    <div class="fin-card">
+      <h3 class="card-title">Planned Vs Actual BOQ</h3>
+      <div class="vbar-chart">
+        <div class="vbar-y-axis">
+          <span>{{ getSalesMax() | number:'1.0-0' }}M</span>
+          <span>{{ (getSalesMax() * 0.66) | number:'1.0-0' }}M</span>
+          <span>{{ (getSalesMax() * 0.33) | number:'1.0-0' }}M</span>
+          <span>0</span>
+        </div>
+        <div class="vbar-area">
+          <div *ngFor="let item of salesRevenueData" class="vbar-group"
+               (mouseenter)="showTooltip($event, item.project, ['Actual: $' + item.actual + 'M', 'Planned: $' + item.planned + 'M', 'Variance: $' + (item.planned - item.actual).toFixed(1) + 'M'])"
+               (mousemove)="moveTooltip($event)"
+               (mouseleave)="hideTooltip()">
+            <div class="vbar-bars">
+              <div class="vbar-bar vbar-actual" [style.height.px]="(getSalesBarHeight(item.actual) / 100) * 200"></div>
+              <div class="vbar-bar vbar-planned" [style.height.px]="(getSalesBarHeight(item.planned) / 100) * 200"></div>
+            </div>
+            <span class="vbar-label">{{ item.project }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="hbar-legend">
+        <span class="legend-dot-item"><span class="legend-dot" style="background:#3b82f6"></span> Actual</span>
+        <span class="legend-dot-item"><span class="legend-dot" style="background:rgba(59,130,246,0.25)"></span> Planned</span>
+      </div>
+    </div>
+
+    <!-- Payment: Gauge + Waterfall -->
+    <div class="fin-card">
+      <h3 class="card-title">Payment Overview</h3>
+      <div class="payment-gauge-row">
+        <!-- Invoice gauge -->
+        <div class="gauge-item"
+             (mouseenter)="showTooltip($event, 'Payment Rate', ['Invoice Raised: ' + formatK(paymentData.invoiceRaised), 'Paid / Received: ' + formatK(paymentData.paidReceived), 'Outstanding: ' + formatK(paymentData.invoiceRaised - paymentData.paidReceived), 'Collection Rate: ' + ((paymentData.paidReceived / paymentData.invoiceRaised) * 100).toFixed(1) + '%'])"
+             (mousemove)="moveTooltip($event)"
+             (mouseleave)="hideTooltip()">
+          <svg viewBox="0 0 100 100" class="gauge-svg">
+            <circle cx="50" cy="50" r="38" fill="none" stroke="var(--surface-3, #e5e7eb)" stroke-width="8"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#d1d5db" stroke-width="8"
+                    [attr.stroke-dasharray]="getDashArray(100, 38)"
+                    stroke-dashoffset="0" transform="rotate(-90 50 50)" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#3b82f6" stroke-width="8"
+                    [attr.stroke-dasharray]="getDashArray((paymentData.paidReceived / paymentData.invoiceRaised) * 100, 38)"
+                    stroke-dashoffset="0" transform="rotate(-90 50 50)" stroke-linecap="round"/>
+            <text x="50" y="46" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="700">{{ ((paymentData.paidReceived / paymentData.invoiceRaised) * 100) | number:'1.0-0' }}%</text>
+            <text x="50" y="60" text-anchor="middle" fill="var(--text-tertiary)" font-size="7">collected</text>
+          </svg>
+          <span class="gauge-label">Payment Rate</span>
+        </div>
+        <!-- Breakdown -->
+        <div class="payment-breakdown">
+          <div class="pb-item">
+            <div class="pb-color" style="background:#d1d5db"></div>
+            <div class="pb-info">
+              <span class="pb-title">Invoice Raised</span>
+              <span class="pb-value">{{ formatK(paymentData.invoiceRaised) }}</span>
+            </div>
+            <div class="pb-bar-track">
+              <div class="pb-bar-fill" style="width:100%; background:#d1d5db"></div>
+            </div>
+          </div>
+          <div class="pb-item">
+            <div class="pb-color" style="background:#3b82f6"></div>
+            <div class="pb-info">
+              <span class="pb-title">Paid / Received</span>
+              <span class="pb-value">{{ formatK(paymentData.paidReceived) }}</span>
+            </div>
+            <div class="pb-bar-track">
+              <div class="pb-bar-fill" [style.width.%]="(paymentData.paidReceived / paymentData.invoiceRaised) * 100" style="background:#3b82f6"></div>
+            </div>
+          </div>
+          <div class="pb-item">
+            <div class="pb-color" style="background:#ef4444"></div>
+            <div class="pb-info">
+              <span class="pb-title">Outstanding</span>
+              <span class="pb-value">{{ formatK(paymentData.invoiceRaised - paymentData.paidReceived) }}</span>
+            </div>
+            <div class="pb-bar-track">
+              <div class="pb-bar-fill" [style.width.%]="((paymentData.invoiceRaised - paymentData.paidReceived) / paymentData.invoiceRaised) * 100" style="background:#ef4444"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Status: Grouped vertical bars -->
+  <div class="fin-card fin-full-card">
+    <h3 class="card-title">Project Status</h3>
+    <div class="ps-chart">
+      <div class="ps-y-axis"><span>Count</span></div>
+      <div class="ps-chart-area">
+        <div class="ps-bars">
+          <div *ngFor="let item of projectStatusData" class="ps-bar-group"
+               (mouseenter)="showTooltip($event, item.project, ['In Progress: ' + item.inProgress, 'IAT Approved: ' + item.iatApproved, 'On Hold: ' + item.onHold, 'Completed: ' + item.completed, 'Total: ' + (item.inProgress + item.iatApproved + item.onHold + item.completed)])"
+               (mousemove)="moveTooltip($event)"
+               (mouseleave)="hideTooltip()">
+            <div class="ps-grouped-bars">
+              <div class="ps-gbar ps-inprogress" [style.height.px]="(getBarHeight(item.inProgress) / 100) * 200"></div>
+              <div class="ps-gbar ps-iat" [style.height.px]="(getBarHeight(item.iatApproved) / 100) * 200"></div>
+              <div class="ps-gbar ps-onhold" [style.height.px]="(getBarHeight(item.onHold) / 100) * 200"></div>
+              <div class="ps-gbar ps-completed" [style.height.px]="(getBarHeight(item.completed) / 100) * 200"></div>
+            </div>
+            <span class="ps-bar-label">{{ item.project }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ps-legend">
+      <span class="legend-dot-item"><span class="legend-dot" style="background:#22c55e"></span> In Progress</span>
+      <span class="legend-dot-item"><span class="legend-dot" style="background:#f59e0b"></span> IAT Approved</span>
+      <span class="legend-dot-item"><span class="legend-dot" style="background:#8b5cf6"></span> On Hold</span>
+      <span class="legend-dot-item"><span class="legend-dot" style="background:#374151"></span> Completed</span>
+    </div>
+  </div>
+
+  <!-- Profit Margin: Radial progress cards (Top 5 + dropdown) -->
+  <div class="fin-card fin-full-card">
+    <div class="card-header">
+      <h3 class="card-title">Profit Margin / Project Count</h3>
+      <select class="card-select" [value]="selectedProfitProject" (change)="onProfitProjectChange($any($event.target).value)">
+        <option>Top 5</option>
+        <option *ngFor="let item of allProfitMarginData">{{ item.project }}</option>
+      </select>
+    </div>
+    <div class="profit-radials" [ngClass]="{'profit-radials-single': profitMarginData.length === 1}">
+      <div *ngFor="let item of profitMarginData" class="profit-radial-card"
+           (mouseenter)="showTooltip($event, item.project, ['Profit Margin: ' + item.margin + '%', 'Project Count: ' + item.count])"
+           (mousemove)="moveTooltip($event)"
+           (mouseleave)="hideTooltip()">
+        <svg viewBox="0 0 100 100" class="profit-ring">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="var(--surface-3, #e5e7eb)" stroke-width="6"/>
+          <circle cx="50" cy="50" r="40" fill="none" [attr.stroke]="item.color" stroke-width="6"
+                  [attr.stroke-dasharray]="getDashArray(item.margin, 40)"
+                  stroke-dashoffset="0" transform="rotate(-90 50 50)" stroke-linecap="round"/>
+          <text x="50" y="47" text-anchor="middle" fill="var(--text-primary)" font-size="16" font-weight="700">{{ item.margin }}%</text>
+          <text x="50" y="62" text-anchor="middle" fill="var(--text-tertiary)" font-size="8">margin</text>
+        </svg>
+        <span class="radial-project">{{ item.project }}</span>
+        <span class="radial-count">{{ item.count }} projects</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Funnel Tracking — Grouped Bar Chart -->
+  <div class="fin-card fin-full-card">
+    <div class="card-header">
+      <h3 class="card-title">Leads Funnel Tracking</h3>
+      <select class="card-select" [value]="funnelFilter" (change)="onFunnelFilterChange($any($event.target).value)">
+        <option *ngFor="let f of funnelFilterOptions">{{ f }}</option>
+      </select>
+    </div>
+    <div class="ft-chart">
+      <!-- Y Axis -->
+      <div class="ft-y-axis">
+        <span class="ft-y-title">Count</span>
+        <div class="ft-y-labels">
+          <span *ngFor="let v of funnelYLabels">{{ v }}</span>
+        </div>
+      </div>
+      <!-- Chart Area -->
+      <div class="ft-chart-area">
+        <!-- Grid lines -->
+        <div class="ft-grid">
+          <div *ngFor="let v of funnelYLabels" class="ft-grid-line"></div>
+        </div>
+        <!-- Bars -->
+        <div class="ft-bars">
+          <div *ngFor="let d of funnelChartData" class="ft-bar-group"
+               (mouseenter)="showTooltip($event, d.month, ['Leads: ' + d.leads, 'Awarded: ' + d.awarded, 'Lost: ' + d.lost, 'Total: ' + (d.leads + d.awarded + d.lost)])"
+               (mousemove)="moveTooltip($event)"
+               (mouseleave)="hideTooltip()">
+            <div class="ft-bar-cols">
+              <div class="ft-bar ft-bar-leads" *ngIf="funnelFilter === 'All' || funnelFilter === 'Leads'"
+                   [style.height.%]="getFunnelBarHeight(d.leads)"></div>
+              <div class="ft-bar ft-bar-awarded" *ngIf="funnelFilter === 'All' || funnelFilter === 'Awarded'"
+                   [style.height.%]="getFunnelBarHeight(d.awarded)"></div>
+              <div class="ft-bar ft-bar-lost" *ngIf="funnelFilter === 'All' || funnelFilter === 'Lost'"
+                   [style.height.%]="getFunnelBarHeight(d.lost)"></div>
+            </div>
+            <span class="ft-month-label">{{ d.month }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Legend -->
+    <div class="ft-legend">
+      <span class="legend-dot-item"><span class="legend-dot" style="background:#9ca3af"></span> Leads</span>
+      <span class="legend-dot-item"><span class="legend-dot" style="background:#22c55e"></span> Awarded</span>
+      <span class="legend-dot-item"><span class="legend-dot" style="background:#8b5cf6"></span> Lost</span>
+    </div>
+  </div>
+
+  <!-- Contractor Payment Summary + Payment Summary & Monthly Goal -->
+  <div class="fin-bottom-row">
+    <div class="fin-card fin-contractor-card">
+      <h3 class="card-title">Subcontractor Payment Summary</h3>
+      <div class="contractor-table-wrap">
+        <table class="contractor-table">
+          <thead>
+            <tr>
+              <th>Subcontractor</th>
+              <th>Contract Value</th>
+              <th>Certified / Paid</th>
+              <th>Retention Held</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of contractors">
+              <td>{{ c.name }}</td>
+              <td>{{ c.total }}</td>
+              <td>{{ c.paid }}</td>
+              <td [class.remaining-red]="c.remaining !== '$0'">{{ c.remaining }}</td>
+              <td><span class="status-badge" [ngClass]="c.status === 'Paid' ? 'badge-paid' : 'badge-partial'">{{ c.status }}</span></td>
+              <td>
+                <button class="action-btn" title="View details">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <a class="view-all-link center">View All Subcontractors</a>
+    </div>
+
+    <div class="fin-right-col">
+      <div class="fin-card fin-payment-card">
+        <h3 class="card-title">Payment Summary</h3>
+        <div class="payment-stats">
+          <div class="payment-stat">
+            <div class="payment-stat-icon blue">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </div>
+            <div class="payment-stat-info">
+              <span class="payment-stat-label">Invoice Raised</span>
+              <span class="payment-stat-value">$13.4M</span>
+            </div>
+          </div>
+          <div class="payment-stat">
+            <div class="payment-stat-icon green">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="payment-stat-info">
+              <span class="payment-stat-label">Amount Received</span>
+              <span class="payment-stat-value paid-green">$9.8M</span>
+            </div>
+          </div>
+          <div class="payment-stat">
+            <div class="payment-stat-icon red">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </div>
+            <div class="payment-stat-info">
+              <span class="payment-stat-label">Outstanding</span>
+              <span class="payment-stat-value remaining-red">$3.6M</span>
+            </div>
+          </div>
+        </div>
+        <div class="payment-progress-wrap">
+          <div class="payment-progress-bar"><div class="payment-progress-fill" style="width: 73.1%"></div></div>
+          <span class="payment-progress-label">73.1% Collected</span>
+        </div>
+      </div>
+
+      <div class="fin-card fin-goal-card">
+        <div class="card-header">
+          <h3 class="card-title">Monthly Billing Target</h3>
+          <select class="card-select" [value]="goalMonth" (change)="onGoalMonthChange($any($event.target).value)">
+            <option>Jun 2024</option><option>May 2024</option><option>Apr 2024</option>
+          </select>
+        </div>
+        <div class="goal-content">
+          <div class="goal-numbers">
+            <span class="goal-current">${{ activeBillingTarget.current }}M</span>
+            <span class="goal-divider">/</span>
+            <span class="goal-target">${{ activeBillingTarget.target }}M</span>
+            <span class="goal-percent">{{ billingPercent }}%</span>
+          </div>
+          <div class="goal-progress-bar"><div class="goal-progress-fill" [style.width.%]="billingPercent"></div></div>
+          <div class="goal-status">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" [attr.stroke]="billingPercent >= 75 ? '#22c55e' : billingPercent >= 50 ? '#f59e0b' : '#ef4444'" stroke-width="2">
+              <path *ngIf="billingPercent >= 50" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline *ngIf="billingPercent >= 50" points="22 4 12 14.01 9 11.01"/>
+              <path *ngIf="billingPercent < 50" d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line *ngIf="billingPercent < 50" x1="12" y1="9" x2="12" y2="13"/><line *ngIf="billingPercent < 50" x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span>{{ activeBillingTarget.status }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sales by Project Dubai Map + Contract Source Donut -->
+  <div class="fin-map-row">
+    <div class="fin-card fin-map-card">
+      <h3 class="card-title">Sales by Project Location</h3>
+      <div class="sales-pie-content">
+        <div class="sales-pie-wrap">
+          <svg viewBox="0 0 200 200" class="sales-pie-chart">
+            <circle cx="100" cy="100" r="80" fill="none" stroke="var(--surface-3, #e5e7eb)" stroke-width="35"/>
+            <circle *ngFor="let seg of salesPieSegments" cx="100" cy="100" r="80" fill="none"
+                    [attr.stroke]="seg.color" stroke-width="35"
+                    [attr.stroke-dasharray]="seg.dashArray"
+                    [attr.stroke-dashoffset]="seg.dashOffset"
+                    transform="rotate(-90 100 100)" stroke-linecap="butt"
+                    class="pie-segment"
+                    (mouseenter)="showTooltip($event, seg.name, ['Sales: ' + seg.amount, 'Share: ' + seg.percent + '%'])"
+                    (mousemove)="moveTooltip($event)"
+                    (mouseleave)="hideTooltip()"/>
+            <text x="100" y="95" text-anchor="middle" fill="var(--text-primary)" font-size="14" font-weight="700">Total</text>
+            <text x="100" y="115" text-anchor="middle" fill="var(--text-primary)" font-size="11" font-weight="500">$40.0M</text>
+          </svg>
+        </div>
+        <div class="sales-pie-legend">
+          <div *ngFor="let item of salesByProject" class="sales-pie-legend-item"
+               (mouseenter)="showTooltip($event, item.name, ['Sales: ' + item.amount, 'Share: ' + item.percent + '%'])"
+               (mousemove)="moveTooltip($event)"
+               (mouseleave)="hideTooltip()">
+            <span class="legend-dot" [style.backgroundColor]="item.percent > 15 ? '#1d4ed8' : item.percent > 10 ? '#3b82f6' : item.percent > 7 ? '#60a5fa' : '#93c5fd'"></span>
+            <span class="sales-pie-name">{{ item.name }}</span>
+            <span class="sales-pie-amount">{{ item.amount }}</span>
+            <span class="sales-pie-percent">{{ item.percent }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fin-card fin-traffic-card">
+      <h3 class="card-title">Contract Source</h3>
+      <div class="traffic-content">
+        <div class="donut-wrap">
+          <svg viewBox="0 0 160 160" class="donut-chart">
+            <circle cx="80" cy="80" r="60" fill="none" stroke="var(--surface-3, #e5e7eb)" stroke-width="20"/>
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#3b82f6" stroke-width="20" stroke-dasharray="143.26 233.62" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#22c55e" stroke-width="20" stroke-dasharray="113.1 263.78" stroke-dashoffset="-143.26" transform="rotate(-90 80 80)"/>
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#f59e0b" stroke-width="20" stroke-dasharray="71.63 305.25" stroke-dashoffset="-256.36" transform="rotate(-90 80 80)"/>
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#8b5cf6" stroke-width="20" stroke-dasharray="37.7 339.18" stroke-dashoffset="-327.99" transform="rotate(-90 80 80)"/>
+            <text x="80" y="74" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="500">Total</text>
+            <text x="80" y="94" text-anchor="middle" fill="var(--text-primary)" font-size="18" font-weight="700">34,450</text>
+          </svg>
+        </div>
+        <div class="traffic-legend">
+          <div *ngFor="let source of trafficSources" class="traffic-legend-item"
+               (mouseenter)="showTooltip($event, source.name, ['Value: ' + source.value.toLocaleString(), 'Share: ' + source.percent + '%'])"
+               (mousemove)="moveTooltip($event)"
+               (mouseleave)="hideTooltip()">
+            <span class="legend-dot" [style.backgroundColor]="source.color"></span>
+            <span class="traffic-name">{{ source.name }}</span>
+            <span class="traffic-stat">{{ source.value | number }} ({{ source.percent }}%)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Revenue vs Cost Graph -->
+  <div class="fin-card fin-full-card mrc-wrapper">
+    <!-- Header Row -->
+    <div class="mrc-header">
+      <div class="mrc-header-left">
+        <div class="mrc-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div>
+          <h3 class="card-title" style="margin:0">Monthly Revenue vs Cost</h3>
+          <span class="mrc-subtitle">Financial trend analysis - Jan to Jul 2024</span>
+        </div>
+      </div>
+      <div class="mrc-legend-bar">
+        <span class="mrc-legend-chip mrc-chip-revenue">
+          <span class="mrc-chip-dot" style="background:#3b82f6"></span> Revenue
+        </span>
+        <span class="mrc-legend-chip mrc-chip-cost">
+          <span class="mrc-chip-dot" style="background:#ef4444"></span> Cost
+        </span>
+        <span class="mrc-legend-chip mrc-chip-profit">
+          <span class="mrc-chip-dot" style="background:#22c55e"></span> Profit Zone
+        </span>
+      </div>
+    </div>
+
+    <!-- Summary KPI Cards -->
+    <div class="mrc-kpi-strip">
+      <div class="mrc-kpi-card mrc-kpi-revenue">
+        <div class="mrc-kpi-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <div class="mrc-kpi-body">
+          <span class="mrc-kpi-label">Total Revenue</span>
+          <span class="mrc-kpi-value">${{ getMrcTotalRevenue() }}M</span>
+        </div>
+      </div>
+      <div class="mrc-kpi-card mrc-kpi-cost">
+        <div class="mrc-kpi-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+        </div>
+        <div class="mrc-kpi-body">
+          <span class="mrc-kpi-label">Total Cost</span>
+          <span class="mrc-kpi-value">${{ getMrcTotalCost() }}M</span>
+        </div>
+      </div>
+      <div class="mrc-kpi-card mrc-kpi-profit">
+        <div class="mrc-kpi-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="mrc-kpi-body">
+          <span class="mrc-kpi-label">Net Profit</span>
+          <span class="mrc-kpi-value">${{ getMrcTotalProfit() }}M</span>
+        </div>
+      </div>
+      <div class="mrc-kpi-card mrc-kpi-margin">
+        <div class="mrc-kpi-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <div class="mrc-kpi-body">
+          <span class="mrc-kpi-label">Avg Margin</span>
+          <span class="mrc-kpi-value">{{ getMrcAvgMargin() }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart Area -->
+    <div class="mrc-chart">
+      <div class="mrc-y-axis">
+        <span *ngFor="let label of mrcYLabels">{{ label }}</span>
+      </div>
+      <div class="mrc-chart-area">
+        <svg viewBox="0 0 500 240" preserveAspectRatio="none" class="mrc-svg">
+          <!-- Grid lines -->
+          <line x1="0" y1="0" x2="500" y2="0" stroke="var(--border)" stroke-width="0.5" opacity="0.15"/>
+          <line x1="0" y1="60" x2="500" y2="60" stroke="var(--border)" stroke-width="0.5" opacity="0.15"/>
+          <line x1="0" y1="120" x2="500" y2="120" stroke="var(--border)" stroke-width="0.5" opacity="0.15"/>
+          <line x1="0" y1="180" x2="500" y2="180" stroke="var(--border)" stroke-width="0.5" opacity="0.15"/>
+          <line x1="0" y1="240" x2="500" y2="240" stroke="var(--border)" stroke-width="0.5" opacity="0.15"/>
+          <!-- Vertical grid lines for each month -->
+          <line *ngFor="let item of monthlyRevenue; let i = index"
+                [attr.x1]="(i / (monthlyRevenue.length - 1)) * 500"
+                y1="0"
+                [attr.x2]="(i / (monthlyRevenue.length - 1)) * 500"
+                y2="240"
+                stroke="var(--border)" stroke-width="0.5" opacity="0.08"/>
+          <!-- Profit area (between revenue and cost) -->
+          <path [attr.d]="mrcProfitAreaPath" fill="#22c55e" opacity="0.08"/>
+          <!-- Revenue area gradient -->
+          <path [attr.d]="mrcRevenueAreaPath" fill="url(#mrcRevenueGrad)" opacity="0.15"/>
+          <!-- Cost area gradient -->
+          <path [attr.d]="mrcCostAreaPath" fill="url(#mrcCostGrad)" opacity="0.1"/>
+          <!-- Cost line -->
+          <path [attr.d]="mrcCostPath" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+          <!-- Revenue line (on top) -->
+          <path [attr.d]="mrcRevenuePath" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Cost dots -->
+          <g *ngFor="let pt of mrcCostPoints">
+            <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="6" fill="#ef4444" opacity="0.12"/>
+            <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="3.5" fill="#ef4444" stroke="var(--surface, #fff)" stroke-width="1.5"/>
+          </g>
+          <!-- Revenue dots -->
+          <g *ngFor="let pt of mrcRevenuePoints">
+            <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="6" fill="#3b82f6" opacity="0.15"/>
+            <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="3.5" fill="#3b82f6" stroke="var(--surface, #fff)" stroke-width="1.5"/>
+          </g>
+          <!-- Value labels on revenue points -->
+          <text *ngFor="let pt of mrcRevenuePoints; let i = index"
+                [attr.x]="pt.x" [attr.y]="pt.y - 14"
+                text-anchor="middle" fill="#3b82f6" font-size="9" font-weight="600"
+                opacity="0.9">
+            ${{ monthlyRevenue[i].revenue }}M
+          </text>
+          <!-- Value labels on cost points -->
+          <text *ngFor="let pt of mrcCostPoints; let i = index"
+                [attr.x]="pt.x" [attr.y]="pt.y + 22"
+                text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600"
+                opacity="0.75">
+            ${{ monthlyRevenue[i].cost }}M
+          </text>
+          <defs>
+            <linearGradient id="mrcRevenueGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="mrcCostGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ef4444" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <!-- Hover columns -->
+        <div class="mrc-hover-columns">
+          <div *ngFor="let item of monthlyRevenue; let i = index" class="mrc-hover-col"
+               [style.left.%]="(i / (monthlyRevenue.length - 1)) * 100"
+               (mouseenter)="showTooltip($event, item.month + ' 2024', ['Revenue: $' + item.revenue + 'M', 'Cost: $' + item.cost + 'M', 'Profit: $' + (item.revenue - item.cost).toFixed(1) + 'M', 'Margin: ' + ((item.revenue - item.cost) / item.revenue * 100).toFixed(1) + '%'])"
+               (mousemove)="moveTooltip($event)"
+               (mouseleave)="hideTooltip()">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mrc-x-axis">
+      <span *ngFor="let item of monthlyRevenue; let i = index" class="mrc-x-label">
+        {{ item.month }}
+        <span class="mrc-x-profit">+${{ (item.revenue - item.cost).toFixed(1) }}M</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- MODULE 6: Management Reports / Cost to Complete (CTC) Dashboard       -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="mod-section">
+    <div class="mod-header">
+      <div class="mod-header-left">
+        <span class="mod-badge mod-badge-red">06</span>
+        <h2 class="mod-title">Cost to Complete (CTC) Dashboard</h2>
+      </div>
+      <div class="mod-filters">
+        <select class="card-select" [value]="ctcTimePeriod" (change)="onCtcTimePeriodChange($any($event.target).value)">
+          <option>Monthly</option>
+          <option>Yearly</option>
+        </select>
+        <select class="card-select" [value]="ctcProjectFilter" (change)="onCtcProjectChange($any($event.target).value)">
+          <option *ngFor="let p of ctcProjectList">{{ p }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- CTC Summary KPIs -->
+    <div class="ctc-kpi-row">
+      <div class="ctc-kpi"><span class="ctc-kpi-label">Total Contract</span><span class="ctc-kpi-value">${{ ctcSummary.totalContract }}M</span></div>
+      <div class="ctc-kpi"><span class="ctc-kpi-label">Total Budget</span><span class="ctc-kpi-value">${{ ctcSummary.totalBudget }}M</span></div>
+      <div class="ctc-kpi"><span class="ctc-kpi-label">Actual Spent</span><span class="ctc-kpi-value ctc-red">${{ ctcSummary.totalActual }}M</span></div>
+      <div class="ctc-kpi"><span class="ctc-kpi-label">Committed</span><span class="ctc-kpi-value ctc-orange">${{ ctcSummary.totalCommitted }}M</span></div>
+      <div class="ctc-kpi"><span class="ctc-kpi-label">Cost to Complete</span><span class="ctc-kpi-value ctc-blue">${{ ctcSummary.totalCtc }}M</span></div>
+      <div class="ctc-kpi"><span class="ctc-kpi-label">Revenue Earned</span><span class="ctc-kpi-value ctc-green">${{ ctcSummary.totalRevenue }}M</span></div>
+      <div class="ctc-kpi"><span class="ctc-kpi-label">Avg Progress</span><span class="ctc-kpi-value">{{ ctcSummary.avgProgress }}%</span></div>
+      <div class="ctc-kpi"><span class="ctc-kpi-label">Avg Margin</span><span class="ctc-kpi-value ctc-green">{{ ctcSummary.avgMargin }}%</span></div>
+    </div>
+
+    <!-- CTC Project Table -->
+    <div class="fin-card">
+      <div class="contractor-table-wrap">
+        <table class="contractor-table mod-table">
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Contract (M)</th>
+              <th>Budget (M)</th>
+              <th>Actual (M)</th>
+              <th>Committed (M)</th>
+              <th>CTC (M)</th>
+              <th>Revenue (M)</th>
+              <th>Margin %</th>
+              <th>Progress</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of ctcProjects"
+                (mouseenter)="showTooltip($event, p.project, ['Contract: $' + p.contractValue + 'M', 'Budget: $' + p.budgetCost + 'M', 'Actual: $' + p.actualCost + 'M', 'Margin: ' + getProjectMargin(p) + '%'])"
+                (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+              <td class="td-bold">{{ p.project }}</td>
+              <td>${{ p.contractValue }}</td>
+              <td>${{ p.budgetCost }}</td>
+              <td>${{ p.actualCost }}</td>
+              <td>${{ p.committed }}</td>
+              <td>${{ p.ctc }}</td>
+              <td class="ctc-green">${{ p.revenue }}</td>
+              <td [class.ctc-green]="getProjectMargin(p) >= 15" [class.ctc-orange]="getProjectMargin(p) >= 5 && getProjectMargin(p) < 15" [class.ctc-red]="getProjectMargin(p) < 5">{{ getProjectMargin(p) }}%</td>
+              <td>
+                <div class="progress-mini-bar"><div class="progress-mini-fill" [style.width.%]="p.progress" [style.background]="p.progress >= 75 ? '#22c55e' : p.progress >= 50 ? '#f59e0b' : '#ef4444'"></div></div>
+                <span class="progress-mini-label">{{ p.progress }}%</span>
+              </td>
+              <td><span class="status-badge" [ngClass]="{'badge-paid': p.status === 'On Track' || p.status === 'Ahead', 'badge-partial': p.status === 'At Risk'}">{{ p.status }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Revenue vs Total Cost + Overall Progress -->
+    <div class="chart-row-2" style="margin-top:16px">
+      <div class="fin-card">
+        <h3 class="card-title">Revenue vs Total Cost</h3>
+        <div class="vbar-chart" style="min-height:220px">
+          <div class="vbar-area">
+            <div *ngFor="let p of getCtcRevenueVsCost()" class="vbar-group"
+                 (mouseenter)="showTooltip($event, p.project, ['Revenue: $' + p.revenue + 'M', 'Total Cost: $' + p.cost.toFixed(1) + 'M', 'Margin: ' + p.margin + '%'])"
+                 (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+              <div class="vbar-bars" style="height:180px">
+                <div class="vbar-bar" style="background: linear-gradient(180deg, #22c55e, #16a34a);" [style.height.px]="(p.revenue / getCtcRevenueMax()) * 170"></div>
+                <div class="vbar-bar" style="background: rgba(239,68,68,0.3); border: 1px dashed rgba(239,68,68,0.5);" [style.height.px]="(p.cost / getCtcRevenueMax()) * 170"></div>
+              </div>
+              <span class="vbar-label">{{ p.project }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="hbar-legend" style="margin-top:10px">
+          <span class="legend-dot-item"><span class="legend-dot" style="background:#22c55e"></span> Revenue</span>
+          <span class="legend-dot-item"><span class="legend-dot" style="background:rgba(239,68,68,0.4)"></span> Total Cost</span>
+        </div>
+      </div>
+      <div class="fin-card" style="text-align:center">
+        <h3 class="card-title">Overall Portfolio Progress</h3>
+        <svg viewBox="0 0 120 120" width="160" height="160" style="margin:12px auto">
+          <circle cx="60" cy="60" r="45" fill="none" stroke="var(--surface-3, #e5e7eb)" stroke-width="10"/>
+          <circle cx="60" cy="60" r="45" fill="none" stroke="#3b82f6" stroke-width="10"
+                  [attr.stroke-dasharray]="getCtcProgressDash()" stroke-dashoffset="0"
+                  transform="rotate(-90 60 60)" stroke-linecap="round"/>
+          <text x="60" y="56" text-anchor="middle" fill="var(--text-primary)" font-size="22" font-weight="700">{{ ctcSummary.avgProgress }}%</text>
+          <text x="60" y="74" text-anchor="middle" fill="var(--text-tertiary)" font-size="10">Avg Progress</text>
+        </svg>
+        <div class="ctc-mini-stats">
+          <div><span class="ctc-mini-label">Margin</span><span class="ctc-mini-val ctc-green">{{ ctcSummary.avgMargin }}%</span></div>
+          <div><span class="ctc-mini-label">Revenue</span><span class="ctc-mini-val">${{ ctcSummary.totalRevenue }}M</span></div>
+          <div><span class="ctc-mini-label">Spent</span><span class="ctc-mini-val ctc-red">${{ ctcSummary.totalActual }}M</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Budget vs Actual Bar Chart -->
+    <div class="fin-card" style="margin-top: 16px;">
+      <h3 class="card-title">Budget vs Actual Cost</h3>
+      <div class="bva-chart">
+        <div *ngFor="let p of ctcProjects" class="bva-row"
+             (mouseenter)="showTooltip($event, p.project, ['Budget: $' + p.budgetCost + 'M', 'Actual: $' + p.actualCost + 'M', 'Variance: $' + (p.budgetCost - p.actualCost).toFixed(1) + 'M'])"
+             (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+          <span class="bva-label">{{ p.project }}</span>
+          <div class="bva-bars">
+            <div class="bva-bar bva-budget" [style.width.%]="(p.budgetCost / 12) * 100">
+              <span class="bva-val">${{ p.budgetCost }}M</span>
+            </div>
+            <div class="bva-bar bva-actual" [style.width.%]="(p.actualCost / 12) * 100" [style.background]="p.actualCost > p.budgetCost ? '#ef4444' : '#22c55e'">
+              <span class="bva-val">${{ p.actualCost }}M</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hbar-legend" style="margin-top:12px">
+        <span class="legend-dot-item"><span class="legend-dot" style="background:#d1d5db"></span> Budget</span>
+        <span class="legend-dot-item"><span class="legend-dot" style="background:#22c55e"></span> Actual (Under)</span>
+        <span class="legend-dot-item"><span class="legend-dot" style="background:#ef4444"></span> Actual (Over)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- MODULE 1: Budget Database (Historical Cost Library)                    -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="mod-section">
+    <div class="mod-header">
+      <div class="mod-header-left">
+        <span class="mod-badge mod-badge-blue">01</span>
+        <h2 class="mod-title">Budget Database - Historical Cost Library</h2>
+      </div>
+      <div class="mod-filters">
+        <select class="card-select" [value]="budgetCategoryFilter" (change)="onBudgetCategoryChange($any($event.target).value)">
+          <option *ngFor="let c of budgetCategories">{{ c }}</option>
+        </select>
+        <select class="card-select" [value]="budgetTradeFilter" (change)="onBudgetTradeChange($any($event.target).value)">
+          <option *ngFor="let t of budgetTrades">{{ t }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="fin-card">
+      <div class="contractor-table-wrap">
+        <table class="contractor-table mod-table">
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th>Unit</th>
+              <th>Category</th>
+              <th>Trade</th>
+              <th>Min Rate</th>
+              <th>Avg Rate</th>
+              <th>Max Rate</th>
+              <th>Last Supplier</th>
+              <th>Last Project</th>
+              <th>Year</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of budgetHistory"
+                (mouseenter)="showTooltip($event, item.material, ['Unit: ' + item.unit, 'Rate Range: ' + item.minRate + ' - ' + item.maxRate, 'Avg: ' + item.avgRate + ' per ' + item.unit, 'Supplier: ' + item.lastSupplier])"
+                (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+              <td class="td-bold">{{ item.material }}</td>
+              <td>{{ item.unit }}</td>
+              <td><span class="cat-badge cat-{{ item.category | lowercase }}">{{ item.category }}</span></td>
+              <td>{{ item.trade }}</td>
+              <td class="ctc-green">{{ item.minRate }}</td>
+              <td class="td-bold">{{ item.avgRate }}</td>
+              <td class="ctc-red">{{ item.maxRate }}</td>
+              <td>{{ item.lastSupplier }}</td>
+              <td>{{ item.lastProject }}</td>
+              <td>{{ item.year }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mod-summary">
+        <span>Showing {{ budgetHistory.length }} of {{ allBudgetHistory.length }} materials</span>
+      </div>
+    </div>
+
+    <!-- Rate Comparison Chart -->
+    <div class="fin-card" style="margin-top:16px">
+      <h3 class="card-title">Rate Comparison (Min / Avg / Max)</h3>
+      <div class="rate-chart">
+        <div *ngFor="let item of getBudgetChartData()" class="rate-row"
+             (mouseenter)="showTooltip($event, item.name, ['Min: ' + item.min, 'Avg: ' + item.avg, 'Max: ' + item.max])"
+             (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+          <span class="rate-label">{{ item.name }}</span>
+          <div class="rate-bars">
+            <div class="rate-bar rate-min" [style.width.%]="(item.min / getBudgetChartMax()) * 100"></div>
+            <div class="rate-bar rate-avg" [style.width.%]="(item.avg / getBudgetChartMax()) * 100"></div>
+            <div class="rate-bar rate-max" [style.width.%]="(item.max / getBudgetChartMax()) * 100"></div>
+          </div>
+          <span class="rate-val">{{ item.avg }}</span>
+        </div>
+      </div>
+      <div class="hbar-legend" style="margin-top:12px">
+        <span class="legend-dot-item"><span class="legend-dot" style="background:#22c55e"></span> Min</span>
+        <span class="legend-dot-item"><span class="legend-dot" style="background:#3b82f6"></span> Avg</span>
+        <span class="legend-dot-item"><span class="legend-dot" style="background:#ef4444"></span> Max</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- MODULE 2: Cost Code Structure                                          -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- MODULE 3: Material Tracking System (End-to-End)                        -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="mod-section">
+    <div class="mod-header">
+      <div class="mod-header-left">
+        <span class="mod-badge mod-badge-green">03</span>
+        <h2 class="mod-title">Material Tracking - MR to Consumption</h2>
+      </div>
+      <div class="mod-filters">
+        <select class="card-select" [value]="materialStatusFilter" (change)="onMaterialStatusChange($any($event.target).value)">
+          <option>All</option><option>Pending</option><option>In Progress</option><option>Completed</option>
+        </select>
+        <select class="card-select" [value]="materialProjectFilter" (change)="onMaterialProjectChange($any($event.target).value)">
+          <option *ngFor="let p of materialProjects">{{ p }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="fin-card">
+      <div class="contractor-table-wrap">
+        <table class="contractor-table mod-table">
+          <thead>
+            <tr>
+              <th>MR #</th>
+              <th>Material</th>
+              <th>Qty</th>
+              <th>Unit</th>
+              <th>PR</th>
+              <th>LPO</th>
+              <th>GRN</th>
+              <th>Issued</th>
+              <th>Consumed</th>
+              <th>Wastage %</th>
+              <th>Project</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of materialTracking"
+                (mouseenter)="showTooltip($event, m.material, ['MR: ' + m.mrNo, 'Qty: ' + m.qty + ' ' + m.unit, 'Issued: ' + m.issued, 'Consumed: ' + m.consumed, 'Wastage: ' + m.wastage + '%'])"
+                (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+              <td class="td-code">{{ m.mrNo }}</td>
+              <td class="td-bold">{{ m.material }}</td>
+              <td>{{ m.qty | number }}</td>
+              <td>{{ m.unit }}</td>
+              <td><span class="pipeline-badge" [ngClass]="'pipe-' + m.prStatus.toLowerCase()">{{ m.prStatus }}</span></td>
+              <td><span class="pipeline-badge" [ngClass]="'pipe-' + m.lpoStatus.toLowerCase()">{{ m.lpoStatus }}</span></td>
+              <td><span class="pipeline-badge" [ngClass]="'pipe-' + m.grnStatus.toLowerCase()">{{ m.grnStatus }}</span></td>
+              <td>{{ m.issued | number }}</td>
+              <td>{{ m.consumed | number }}</td>
+              <td [class.ctc-red]="m.wastage > 5" [class.ctc-orange]="m.wastage > 3 && m.wastage <= 5" [class.ctc-green]="m.wastage <= 3 && m.wastage > 0">
+                {{ m.wastage > 0 ? m.wastage + '%' : '-' }}
+              </td>
+              <td>{{ m.project }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mod-summary">
+        <span>{{ materialTracking.length }} material requests tracked</span>
+      </div>
+    </div>
+
+    <!-- Pipeline Status Visual -->
+    <div class="fin-card" style="margin-top:16px">
+      <h3 class="card-title">Material Pipeline Overview</h3>
+      <div class="pipeline-visual">
+        <div class="pipeline-stage">
+          <div class="pipeline-circle pipe-bg-blue">
+            <span class="pipeline-count">{{ getMaterialPipelineCounts().totalMR }}</span>
+          </div>
+          <span class="pipeline-stage-label">Total MR</span>
+        </div>
+        <div class="pipeline-arrow">
+          <svg width="40" height="20" viewBox="0 0 40 20"><path d="M0 10 L30 10 M25 5 L32 10 L25 15" fill="none" stroke="var(--text-tertiary)" stroke-width="1.5"/></svg>
+        </div>
+        <div class="pipeline-stage">
+          <div class="pipeline-circle pipe-bg-green">
+            <span class="pipeline-count">{{ getMaterialPipelineCounts().prApproved }}</span>
+          </div>
+          <span class="pipeline-stage-label">PR Approved</span>
+          <span class="pipeline-sub" *ngIf="getMaterialPipelineCounts().prPending > 0">{{ getMaterialPipelineCounts().prPending }} pending</span>
+        </div>
+        <div class="pipeline-arrow">
+          <svg width="40" height="20" viewBox="0 0 40 20"><path d="M0 10 L30 10 M25 5 L32 10 L25 15" fill="none" stroke="var(--text-tertiary)" stroke-width="1.5"/></svg>
+        </div>
+        <div class="pipeline-stage">
+          <div class="pipeline-circle pipe-bg-blue">
+            <span class="pipeline-count">{{ getMaterialPipelineCounts().lpoIssued }}</span>
+          </div>
+          <span class="pipeline-stage-label">LPO Issued</span>
+          <span class="pipeline-sub" *ngIf="getMaterialPipelineCounts().lpoPending > 0">{{ getMaterialPipelineCounts().lpoPending }} pending</span>
+        </div>
+        <div class="pipeline-arrow">
+          <svg width="40" height="20" viewBox="0 0 40 20"><path d="M0 10 L30 10 M25 5 L32 10 L25 15" fill="none" stroke="var(--text-tertiary)" stroke-width="1.5"/></svg>
+        </div>
+        <div class="pipeline-stage">
+          <div class="pipeline-circle pipe-bg-green">
+            <span class="pipeline-count">{{ getMaterialPipelineCounts().grnReceived }}</span>
+          </div>
+          <span class="pipeline-stage-label">GRN Received</span>
+          <span class="pipeline-sub" *ngIf="getMaterialPipelineCounts().grnPartial > 0">{{ getMaterialPipelineCounts().grnPartial }} partial</span>
+        </div>
+        <div class="pipeline-arrow">
+          <svg width="40" height="20" viewBox="0 0 40 20"><path d="M0 10 L30 10 M25 5 L32 10 L25 15" fill="none" stroke="var(--text-tertiary)" stroke-width="1.5"/></svg>
+        </div>
+        <div class="pipeline-stage">
+          <div class="pipeline-circle pipe-bg-purple">
+            <span class="pipeline-count">{{ getMaterialPipelineCounts().totalConsumed | number }}</span>
+          </div>
+          <span class="pipeline-stage-label">Consumed</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 5 Material Suppliers -->
+    <div class="fin-card" style="margin-top:16px">
+      <h3 class="card-title">Top 5 Material Suppliers</h3>
+      <div class="supplier-chart">
+        <div *ngFor="let supplier of topMaterialSuppliers" class="supplier-bar-row"
+             (mouseenter)="showTooltip($event, supplier.name, ['Total PO: ' + formatSupplierAmount(supplier.totalPO), 'Delivered: ' + formatSupplierAmount(supplier.delivered), 'Delivery: ' + getSupplierDeliveryPct(supplier) + '%'])"
+             (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+          <span class="supplier-name">{{ supplier.name }}</span>
+          <div class="supplier-bar-wrap">
+            <div class="supplier-bar-bg">
+              <div class="supplier-bar-total" [style.width.%]="(supplier.totalPO / getSupplierMaxPO()) * 100" [style.backgroundColor]="supplier.color + '30'">
+                <div class="supplier-bar-delivered" [style.width.%]="getSupplierDeliveryPct(supplier)" [style.backgroundColor]="supplier.color"></div>
+              </div>
+            </div>
+            <div class="supplier-bar-labels">
+              <span class="supplier-amount">{{ formatSupplierAmount(supplier.totalPO) }}</span>
+              <span class="supplier-pct" [style.color]="supplier.color">{{ getSupplierDeliveryPct(supplier) }}% delivered</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="supplier-legend">
+        <span class="supplier-legend-item"><span class="supplier-legend-box" style="background: rgba(59,130,246,0.3)"></span> Total PO</span>
+        <span class="supplier-legend-item"><span class="supplier-legend-box" style="background: #3b82f6"></span> Delivered</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- MODULE 4: Internal Delivery Order (DO) Management                      -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="mod-section">
+    <div class="mod-header">
+      <div class="mod-header-left">
+        <span class="mod-badge mod-badge-orange">04</span>
+        <h2 class="mod-title">Internal Delivery Order (DO) Management</h2>
+      </div>
+      <div class="mod-filters">
+        <select class="card-select" [value]="doStatusFilter" (change)="onDoStatusChange($any($event.target).value)">
+          <option>All</option><option>Delivered</option><option>In Transit</option>
+        </select>
+        <select class="card-select" [value]="doSiteFilter" (change)="onDoSiteChange($any($event.target).value)">
+          <option *ngFor="let s of doSites">{{ s }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="fin-card">
+      <div class="contractor-table-wrap">
+        <table class="contractor-table mod-table">
+          <thead>
+            <tr>
+              <th>DO #</th>
+              <th>From Warehouse</th>
+              <th>To Site</th>
+              <th>Material</th>
+              <th>Qty Sent</th>
+              <th>Received</th>
+              <th>Consumed</th>
+              <th>Balance</th>
+              <th>Loss</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of deliveryOrders"
+                (mouseenter)="showTooltip($event, d.doNo, ['Material: ' + d.material, 'Sent: ' + d.qtySent, 'Received: ' + d.qtyReceived, 'Loss: ' + (d.qtySent - d.qtyReceived), 'Balance at Site: ' + d.balance])"
+                (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+              <td class="td-code">{{ d.doNo }}</td>
+              <td>{{ d.fromWarehouse }}</td>
+              <td>{{ d.toSite }}</td>
+              <td class="td-bold">{{ d.material }}</td>
+              <td>{{ d.qtySent | number }}</td>
+              <td>{{ d.qtyReceived | number }}</td>
+              <td>{{ d.consumed | number }}</td>
+              <td class="td-bold">{{ d.balance | number }}</td>
+              <td [class.ctc-red]="d.qtySent - d.qtyReceived > 0">{{ d.qtySent - d.qtyReceived > 0 ? (d.qtySent - d.qtyReceived) : '-' }}</td>
+              <td><span class="status-badge" [ngClass]="d.status === 'Delivered' ? 'badge-paid' : 'badge-transit'">{{ d.status }}</span></td>
+              <td>{{ d.date }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="4" class="td-bold">TOTAL</td>
+              <td class="td-bold">{{ getDoTotals().sent | number }}</td>
+              <td class="td-bold">{{ getDoTotals().received | number }}</td>
+              <td class="td-bold">{{ getDoTotals().consumed | number }}</td>
+              <td class="td-bold">{{ getDoTotals().balance | number }}</td>
+              <td class="td-bold ctc-red">{{ getDoTotals().loss > 0 ? getDoTotals().loss : '-' }}</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- DO Stock Flow Chart -->
+    <div class="fin-card" style="margin-top:16px">
+      <h3 class="card-title">Stock Flow by Site (Sent / Received / Consumed)</h3>
+      <div class="vbar-chart" style="min-height:220px">
+        <div class="vbar-area">
+          <div *ngFor="let d of getDoChartData()" class="vbar-group"
+               (mouseenter)="showTooltip($event, d.site, ['Sent: ' + d.sent, 'Received: ' + d.received, 'Consumed: ' + d.consumed, 'Loss: ' + (d.sent - d.received)])"
+               (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+            <div class="vbar-bars" style="height:180px">
+              <div class="vbar-bar" style="background:#94a3b8;" [style.height.px]="(d.sent / getDoChartMax()) * 160"></div>
+              <div class="vbar-bar" style="background:#3b82f6;" [style.height.px]="(d.received / getDoChartMax()) * 160"></div>
+              <div class="vbar-bar" style="background:#22c55e;" [style.height.px]="(d.consumed / getDoChartMax()) * 160"></div>
+            </div>
+            <span class="vbar-label">{{ d.site }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="hbar-legend" style="margin-top:10px">
+        <span class="legend-dot-item"><span class="legend-dot" style="background:#94a3b8"></span> Sent</span>
+        <span class="legend-dot-item"><span class="legend-dot" style="background:#3b82f6"></span> Received</span>
+        <span class="legend-dot-item"><span class="legend-dot" style="background:#22c55e"></span> Consumed</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- MODULE 5: Supplier & Subcontractor LPO Logs                            -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="mod-section">
+    <div class="mod-header">
+      <div class="mod-header-left">
+        <span class="mod-badge mod-badge-cyan">05</span>
+        <h2 class="mod-title">Supplier & Subcontractor LPO Logs</h2>
+      </div>
+      <div class="mod-filters">
+        <select class="card-select" [value]="lpoStatusFilter" (change)="onLpoStatusChange($any($event.target).value)">
+          <option>All</option><option>Partial</option><option>Completed</option><option>Invoiced</option><option>Pending</option>
+        </select>
+        <select class="card-select" [value]="lpoSupplierFilter" (change)="onLpoSupplierChange($any($event.target).value)">
+          <option *ngFor="let s of lpoSuppliers">{{ s }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- LPO Summary KPIs -->
+    <div class="ctc-kpi-row ctc-kpi-row-5">
+      <div class="ctc-kpi"><span class="ctc-kpi-label">Total LPO Value</span><span class="ctc-kpi-value">{{ formatK(getLpoTotals().lpoValue) }}</span></div>
+      <div class="ctc-kpi"><span class="ctc-kpi-label">Delivered</span><span class="ctc-kpi-value ctc-blue">{{ formatK(getLpoTotals().delivered) }}</span></div>
+      <div class="ctc-kpi"><span class="ctc-kpi-label">Invoiced</span><span class="ctc-kpi-value ctc-orange">{{ formatK(getLpoTotals().invoiced) }}</span></div>
+      <div class="ctc-kpi"><span class="ctc-kpi-label">Paid</span><span class="ctc-kpi-value ctc-green">{{ formatK(getLpoTotals().paid) }}</span></div>
+      <div class="ctc-kpi"><span class="ctc-kpi-label">Outstanding</span><span class="ctc-kpi-value ctc-red">{{ formatK(getLpoTotals().outstanding) }}</span></div>
+    </div>
+
+    <div class="fin-card">
+      <div class="contractor-table-wrap">
+        <table class="contractor-table mod-table">
+          <thead>
+            <tr>
+              <th>LPO #</th>
+              <th>Supplier</th>
+              <th>Material / Service</th>
+              <th>LPO Value</th>
+              <th>Delivered</th>
+              <th>Invoiced</th>
+              <th>Paid</th>
+              <th>Outstanding</th>
+              <th>On-Time %</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let l of lpoLogs"
+                (mouseenter)="showTooltip($event, l.supplier, ['LPO: ' + l.lpoNo, 'Value: $' + l.lpoValue.toLocaleString(), 'Paid: $' + l.paid.toLocaleString(), 'Outstanding: $' + l.outstanding.toLocaleString(), 'On-Time Score: ' + l.onTimeScore + '%'])"
+                (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+              <td class="td-code">{{ l.lpoNo }}</td>
+              <td class="td-bold">{{ l.supplier }}</td>
+              <td>{{ l.material }}</td>
+              <td>${{ l.lpoValue | number }}</td>
+              <td>${{ l.delivered | number }}</td>
+              <td>${{ l.invoiced | number }}</td>
+              <td class="ctc-green">${{ l.paid | number }}</td>
+              <td [class.ctc-red]="l.outstanding > 0">${{ l.outstanding | number }}</td>
+              <td>
+                <div class="score-bar-wrap">
+                  <div class="score-bar" [style.width.%]="l.onTimeScore" [style.background]="l.onTimeScore >= 85 ? '#22c55e' : l.onTimeScore >= 70 ? '#f59e0b' : '#ef4444'"></div>
+                </div>
+                <span class="score-label">{{ l.onTimeScore || '-' }}%</span>
+              </td>
+              <td><span class="status-badge" [ngClass]="{'badge-paid': l.status === 'Completed', 'badge-partial': l.status === 'Partial', 'badge-transit': l.status === 'Pending', 'badge-invoiced': l.status === 'Invoiced'}">{{ l.status }}</span></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="3" class="td-bold">TOTAL</td>
+              <td class="td-bold">${{ getLpoTotals().lpoValue | number }}</td>
+              <td class="td-bold">${{ getLpoTotals().delivered | number }}</td>
+              <td class="td-bold">${{ getLpoTotals().invoiced | number }}</td>
+              <td class="td-bold ctc-green">${{ getLpoTotals().paid | number }}</td>
+              <td class="td-bold ctc-red">${{ getLpoTotals().outstanding | number }}</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Payment Flow Waterfall -->
+    <div class="fin-card" style="margin-top:16px">
+      <h3 class="card-title">Payment Flow Pipeline</h3>
+      <div class="waterfall-chart">
+        <div *ngFor="let stage of getLpoPaymentFlow()" class="waterfall-stage"
+             (mouseenter)="showTooltip($event, stage.label, [formatK(stage.value)])"
+             (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+          <div class="waterfall-bar-wrap">
+            <div class="waterfall-bar" [style.width.%]="stage.pct" [style.background]="stage.color">
+              <span class="waterfall-bar-val" *ngIf="stage.pct > 15">{{ formatK(stage.value) }}</span>
+            </div>
+          </div>
+          <div class="waterfall-meta">
+            <span class="waterfall-label">{{ stage.label }}</span>
+            <span class="waterfall-pct">{{ stage.pct | number:'1.0-0' }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

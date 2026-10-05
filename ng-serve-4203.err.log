@@ -1,0 +1,31 @@
+- Building...
+
+- Changes detected. Rebuilding...
+
+- Changes detected. Rebuilding...
+
+fatal error: all goroutines are asleep - deadlock!
+
+goroutine 1 [chan receive]:
+github.com/evanw/esbuild/internal/helpers.(*ThreadSafeWaitGroup).Wait(...)
+	github.com/evanw/esbuild/internal/helpers/waitgroup.go:36
+main.runService.func2()
+	github.com/evanw/esbuild/cmd/esbuild/service.go:114 +0x59
+main.runService(0x1)
+	github.com/evanw/esbuild/cmd/esbuild/service.go:160 +0x4ed
+main.main()
+	github.com/evanw/esbuild/cmd/esbuild/main.go:240 +0xa29
+
+goroutine 18 [chan receive]:
+main.runService.func1()
+	github.com/evanw/esbuild/cmd/esbuild/service.go:98 +0x4a
+created by main.runService
+	github.com/evanw/esbuild/cmd/esbuild/service.go:97 +0x1e5
+
+goroutine 19 [chan receive]:
+main.(*serviceType).sendRequest(0xc000126060, {0x1540680, 0xc001741470})
+	github.com/evanw/esbuild/cmd/esbuild/service.go:192 +0xfa
+main.runService.func3()
+	github.com/evanw/esbuild/cmd/esbuild/service.go:125 +0x39
+created by main.runService
+	github.com/evanw/esbuild/cmd/esbuild/service.go:122 +0x31c

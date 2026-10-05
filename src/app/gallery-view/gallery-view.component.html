@@ -1,0 +1,187 @@
+<div class="gallery-page">
+  <!-- Header + Filters in single row -->
+  <div class="page-header-bar">
+    <div class="header-text">
+      <h1>Gallery</h1>
+      <p class="subtitle">Browse construction proof photos by phase</p>
+    </div>
+    <!-- Same filters as the GIS Map — shared state, so a selection scopes both. -->
+    <app-filter-bar [state]="filters" [applying]="applyingFilters" (apply)="applyFilters()"></app-filter-bar>
+  </div>
+
+  <!-- Back out of a phase (grid mode only). The phase name itself now lives in
+       the global breadcrumb trail, which this page feeds via BreadcrumbService. -->
+  <div class="gallery-breadcrumb" *ngIf="!inFolderMode">
+    <button type="button" class="crumb-back" (click)="backToFolders()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      All phases
+    </button>
+    <span class="crumb-count" *ngIf="tiles.length">
+      {{ tiles.length }} photo{{ tiles.length === 1 ? '' : 's' }}
+      <ng-container *ngIf="hasMorePages">
+        · {{ resolvedSegments }}/{{ totalSegments }} segments scanned
+      </ng-container>
+    </span>
+  </div>
+
+  <!-- ══════════ Folder mode: no phase chosen ══════════ -->
+  <div class="gallery-body" *ngIf="inFolderMode">
+    <div class="folder-intro">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+      <span>Choose a phase to see its photos.</span>
+    </div>
+
+    <div class="loading-block" *ngIf="foldersLoading">
+      <div class="spinner"></div>
+      <span>Loading phases…</span>
+    </div>
+
+    <div class="folder-grid" *ngIf="!foldersLoading">
+      <button
+        type="button"
+        class="folder-card"
+        *ngFor="let folder of folders"
+        [class.disabled]="folder.phaseId === null"
+        [disabled]="folder.phaseId === null"
+        [attr.title]="folder.phaseId === null ? 'No segment data for this phase' : 'Open ' + folder.phaseName"
+        (click)="openFolder(folder)"
+      >
+        <span class="folder-icon" aria-hidden="true">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <circle cx="9.5" cy="12.5" r="1.5"/>
+            <path d="m3 17 4.5-4 3 2.5L14 12l7 5"/>
+          </svg>
+        </span>
+        <span class="folder-name">{{ folder.phaseName }}</span>
+
+        <span class="folder-meta" *ngIf="folder.photoCount !== null">
+          {{ folder.photoCount }} photo{{ folder.photoCount === 1 ? '' : 's' }}
+        </span>
+        <span class="folder-meta" *ngIf="folder.photoCount === null && folder.segmentCount !== null">
+          {{ folder.segmentCount }} segment{{ folder.segmentCount === 1 ? '' : 's' }}
+        </span>
+        <span class="folder-meta muted" *ngIf="folder.phaseId === null">No segment data</span>
+
+        <span class="folder-progress" *ngIf="folder.completionPercent !== null">
+          <span class="folder-progress-track">
+            <span class="folder-progress-fill" [style.width.%]="folder.completionPercent"></span>
+          </span>
+          <span class="folder-progress-text">
+            {{ folder.completionPercent }}%
+            <ng-container *ngIf="folder.plannedKm">· {{ folder.plannedKm | number: '1.0-0' }} km</ng-container>
+          </span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ Grid mode: a phase is chosen ══════════ -->
+  <div class="gallery-body" *ngIf="!inFolderMode">
+    <div class="grid-error" *ngIf="gridError">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span>{{ gridError }}</span>
+    </div>
+
+    <div class="loading-block" *ngIf="segmentsLoading">
+      <div class="spinner"></div>
+      <span>Loading segments for {{ breadcrumbPhase }}… this can take up to a minute.</span>
+    </div>
+
+    <div class="grid-empty" *ngIf="!segmentsLoading && gridMessage && tiles.length === 0">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/>
+      </svg>
+      <span>{{ gridMessage }}</span>
+    </div>
+
+    <div class="photo-grid" *ngIf="tiles.length">
+      <button
+        type="button"
+        class="photo-tile"
+        *ngFor="let tile of tiles; let i = index"
+        (click)="openViewer(i)"
+        [attr.title]="tile.label + (tile.routeName ? ' · ' + tile.routeName : '')"
+      >
+        <img class="photo-tile-img" [src]="tile.url" [alt]="tile.label" loading="lazy" />
+        <span class="photo-tile-caption">
+          <span class="photo-tile-label">{{ tile.label }}</span>
+          <span class="photo-tile-sub" *ngIf="tile.routeName">{{ tile.routeName }}</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- Auto-loads the next page when scrolled near; the button is the fallback. -->
+    <div class="load-more" *ngIf="hasMorePages && !segmentsLoading" #loadMoreSentinel>
+      <div class="spinner" *ngIf="pageLoading"></div>
+      <button type="button" class="load-more-btn" *ngIf="!pageLoading" (click)="loadNextPage()">
+        Load more photos
+      </button>
+      <span class="load-more-note">{{ resolvedSegments }} of {{ totalSegments }} segments scanned</span>
+    </div>
+  </div>
+
+  <!-- ══════════ Full-screen viewer ══════════ -->
+  <app-image-viewer
+    *ngIf="viewerOpen"
+    [tiles]="tiles"
+    [index]="viewerIndex"
+    [detailOpen]="detailOpen"
+    (indexChange)="onViewerIndexChange($event)"
+    (closed)="closeViewer()"
+    (detailToggled)="toggleDetail()"
+  ></app-image-viewer>
+
+  <!-- ══════════ Detail panel ══════════ -->
+  <div class="detail-panel" [class.open]="detailOpen" *ngIf="viewerOpen">
+    <div class="panel-header">
+      <span class="panel-title">Photo Detail</span>
+      <button type="button" class="panel-close-btn" aria-label="Close detail" (click)="closeDetail()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="panel-body">
+      <!-- Where the photo was taken -->
+      <div class="panel-section">
+        <h4 class="panel-section-title">Location</h4>
+        <div class="mini-map-host" #miniMapHost *ngIf="detailHasCoordinates"></div>
+        <div class="mini-map-empty" *ngIf="!detailHasCoordinates">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span>This segment has no coordinates recorded.</span>
+        </div>
+      </div>
+
+      <!-- Segment metadata -->
+      <div class="panel-section">
+        <h4 class="panel-section-title">Segment</h4>
+        <dl class="detail-list" *ngIf="detailRows.length; else noDetail">
+          <div class="detail-row" *ngFor="let row of detailRows">
+            <dt class="detail-label">{{ row.label }}</dt>
+            <dd class="detail-value">{{ row.value }}</dd>
+          </div>
+        </dl>
+        <ng-template #noDetail>
+          <p class="detail-placeholder">No metadata for this segment.</p>
+        </ng-template>
+      </div>
+
+      <button type="button" class="panel-action" (click)="openInGisMap()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+        Open in GIS Map
+      </button>
+    </div>
+  </div>
+</div>

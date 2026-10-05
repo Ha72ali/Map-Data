@@ -1,0 +1,69 @@
+<h1 class="page-title">Dashboard</h1>
+
+<!-- Welcome card (everyone) -->
+<mat-card class="welcome" *ngIf="auth.user() as u">
+  <div class="welcome-body">
+    <mat-icon>waving_hand</mat-icon>
+    <div>
+      <div class="welcome-hi">Welcome, {{ u.firstName }} {{ u.lastName }}</div>
+      <div class="welcome-sub">
+        {{ u.role?.name }} · Last login:
+        {{ u.lastLogin ? (u.lastLogin | date: 'medium') : 'first time' }}
+      </div>
+    </div>
+  </div>
+  <div class="welcome-completion">
+    <span>Profile {{ completion() }}% complete</span>
+    <mat-progress-bar mode="determinate" [value]="completion()"></mat-progress-bar>
+    <a mat-stroked-button color="primary" routerLink="/profile">
+      <mat-icon>person</mat-icon> View Profile
+    </a>
+  </div>
+</mat-card>
+
+<!-- Admin stats (only for users with User.View) -->
+<ng-container *ngIf="isAdminView()">
+  <div class="cards">
+    <mat-card class="stat" *ngFor="let c of cards()">
+      <div class="stat-body">
+        <mat-icon [style.background]="c.color">{{ c.icon }}</mat-icon>
+        <div>
+          <div class="stat-value">{{ c.value }}</div>
+          <div class="stat-label">{{ c.label }}</div>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+
+  <div class="grid">
+    <mat-card>
+      <mat-card-header><mat-card-title>Recent Users</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <mat-list>
+          <mat-list-item *ngFor="let u of recentUsers()">
+            <mat-icon matListItemIcon>person</mat-icon>
+            <span matListItemTitle>{{ u.firstName }} {{ u.lastName }}</span>
+            <span matListItemLine>{{ u.email }} · {{ u.role?.name }}</span>
+          </mat-list-item>
+          <p *ngIf="recentUsers().length === 0" class="empty">No users yet.</p>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-header><mat-card-title>Recent Activity</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <mat-list>
+          <mat-list-item *ngFor="let a of activity()">
+            <mat-icon matListItemIcon>history</mat-icon>
+            <span matListItemTitle>{{ a.action }}</span>
+            <span matListItemLine>
+              {{ a.actor?.username || 'system' }} · {{ a.createdAt | date: 'short' }}
+            </span>
+          </mat-list-item>
+          <p *ngIf="activity().length === 0" class="empty">No activity yet.</p>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</ng-container>

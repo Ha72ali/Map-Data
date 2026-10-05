@@ -1,0 +1,40 @@
+.page-title {
+  margin: 0 0 20px;
+  font-size: 24px;
+  font-weight: 600;
+}
+.card {
+  max-width: 760px;
+  margin-bottom: 16px;
+}
+.row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.row mat-form-field {
+  flex: 1 1 320px;
+}
+.full {
+  width: 100%;
+}
+.group {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.group-head {
+  font-weight: 600;
+}
+.perms {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px 16px;
+  padding: 8px 0 0 28px;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  max-width: 760px;
+}

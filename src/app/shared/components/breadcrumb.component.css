@@ -1,0 +1,138 @@
+/* Sits directly above the routed page, inside .main's scroll area.
+   The bar is a solid brand blue in BOTH themes, so every colour below is a
+   fixed white alpha rather than a theme token — a token like --text flips to
+   near-black in the light theme and would vanish against this background. */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  background: #3c82f6;
+}
+
+.breadcrumb-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.breadcrumb-link {
+  padding: 3px 6px;
+  border-radius: 5px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.breadcrumb-link:hover,
+.breadcrumb-link:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+/* Keyboard focus needs to survive on top of the blue. */
+.breadcrumb-link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
+/* Non-linked crumbs (e.g. a componentless parent like "Administration")
+   stay plain — only the current page gets the highlight below. */
+.breadcrumb-current {
+  padding: 3px 6px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* Active (last) crumb — a frosted pill so the current page reads at a glance.
+   White-on-blue rather than an accent colour, which would muddy against the
+   bar and risk reading as another link. */
+.breadcrumb-current[aria-current='page'] {
+  padding: 3px 8px;
+  border-radius: 5px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.breadcrumb-sep {
+  color: rgba(255, 255, 255, 0.55);
+  flex-shrink: 0;
+}
+
+.breadcrumb-list {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Page-supplied actions. The negative margin keeps the 32px buttons from
+   making the bar taller on the pages that register one. */
+.breadcrumb-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin: -6px 0;
+}
+
+.crumb-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.crumb-icon-btn:hover:not([disabled]) {
+  background: rgba(255, 255, 255, 0.26);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.crumb-icon-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
+.crumb-icon-btn[disabled] {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.crumb-btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: crumb-spin 0.7s linear infinite;
+}
+
+@keyframes crumb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .breadcrumb {
+    padding: 10px 14px;
+  }
+}

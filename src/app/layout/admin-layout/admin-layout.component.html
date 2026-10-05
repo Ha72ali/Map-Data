@@ -1,0 +1,46 @@
+<app-spinner></app-spinner>
+<mat-sidenav-container class="shell">
+  <mat-sidenav mode="side" opened class="sidenav">
+    <div class="brand">
+      <mat-icon>shield_person</mat-icon>
+      <span>RBAC Admin</span>
+    </div>
+
+    <mat-nav-list>
+      <ng-container *ngFor="let item of auth.menu()">
+        <a
+          mat-list-item
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.route === '/admin/dashboard' }"
+        >
+          <mat-icon matListItemIcon>{{ item.icon || 'chevron_right' }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
+      </ng-container>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar color="primary" class="topbar">
+      <span class="spacer"></span>
+      <button mat-icon-button (click)="toggleTheme()" aria-label="Toggle theme">
+        <mat-icon>{{ dark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+      <button mat-button [matMenuTriggerFor]="userMenu">
+        <mat-icon>account_circle</mat-icon>
+        <span class="username">{{ auth.user()?.username }}</span>
+        <span class="role-chip" *ngIf="auth.user()?.role as role">{{ role.name }}</span>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <a mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon> Profile</a>
+        <a mat-menu-item routerLink="/change-password"><mat-icon>key</mat-icon> Change Password</a>
+        <button mat-menu-item (click)="logout()"><mat-icon>logout</mat-icon> Logout</button>
+      </mat-menu>
+    </mat-toolbar>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

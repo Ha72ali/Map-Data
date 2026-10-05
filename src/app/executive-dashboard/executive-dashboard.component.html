@@ -1,0 +1,1834 @@
+<!-- Executive Dashboard -->
+<div class="exec-dashboard">
+
+  <!-- Full-dashboard export overlay -->
+  <div class="export-overlay no-export" *ngIf="exportingDashboard">
+    <div class="export-overlay-box">
+      <span class="export-overlay-spinner"></span>
+      <span>Generating dashboard image…</span>
+    </div>
+  </div>
+
+  <!-- Navbar: single row with title, filters, and actions -->
+  <nav class="dashboard-navbar">
+    <div class="header-left">
+      <h1 class="dashboard-title">Executive Dashboard</h1>
+      <p class="dashboard-subtitle">Real-time overview of fiber deployment progress</p>
+    </div>
+
+    <!-- Filter controls: reused inline on desktop and inside the modal on small screens -->
+    <ng-template #filterControlsTpl>
+      <div class="filter-item filter-item-multiselect">
+        <label>Contractor</label>
+        <!-- Locked when the deployment serves a single contractor: it is
+             pre-selected, so there is nothing to pick and nothing to clear. -->
+        <button type="button" class="filter-ms-trigger"
+                [disabled]="isSingleContractorDeployment"
+                [attr.aria-disabled]="isSingleContractorDeployment"
+                [title]="isSingleContractorDeployment ? 'Only one contractor in this deployment' : ''"
+                (click)="toggleDropdown('contractor', $event)">
+          <span>{{ selectedContractor }}</span>
+          <svg *ngIf="!isSingleContractorDeployment" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="ms-dropdown" *ngIf="openDropdown === 'contractor' && !isSingleContractorDeployment" (click)="$event.stopPropagation()">
+          <div class="ms-actions">
+            <button type="button" class="ms-action-btn" (click)="msSelectAll('contractor')">Select All</button>
+            <button type="button" class="ms-action-btn" (click)="msClear('contractor')">Clear</button>
+          </div>
+          <label class="ms-option" *ngFor="let c of contractorOptions">
+            <input type="checkbox" [checked]="isSelected('contractor', c)" (change)="toggleSelection('contractor', c)" />
+            <span>{{ c }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="filter-item filter-item-multiselect">
+        <label>RING</label>
+        <button type="button" class="filter-ms-trigger" (click)="toggleDropdown('region', $event)">
+          <span>{{ selectedRegion }}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="ms-dropdown" *ngIf="openDropdown === 'region'" (click)="$event.stopPropagation()">
+          <div class="ms-actions">
+            <button type="button" class="ms-action-btn" (click)="msSelectAll('region')">Select All</button>
+            <button type="button" class="ms-action-btn" (click)="msClear('region')">Clear</button>
+          </div>
+          <label class="ms-option" *ngFor="let r of regionOptions">
+            <input type="checkbox" [checked]="isSelected('region', r)" (change)="toggleSelection('region', r)" />
+            <span>{{ r }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="filter-item filter-item-multiselect">
+        <label>LINK</label>
+        <button type="button" class="filter-ms-trigger" (click)="toggleDropdown('project', $event)">
+          <span>{{ selectedProject }}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="ms-dropdown" *ngIf="openDropdown === 'project'" (click)="$event.stopPropagation()">
+          <div class="ms-actions">
+            <button type="button" class="ms-action-btn" (click)="msSelectAll('project')">Select All</button>
+            <button type="button" class="ms-action-btn" (click)="msClear('project')">Clear</button>
+          </div>
+          <label class="ms-option" *ngFor="let p of projectOptions">
+            <input type="checkbox" [checked]="isSelected('project', p)" (change)="toggleSelection('project', p)" />
+            <span>{{ p }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="filter-item filter-item-multiselect">
+        <label>Phase</label>
+        <button type="button" class="filter-ms-trigger" (click)="toggleDropdown('phase', $event)">
+          <span>{{ selectedPhase }}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="ms-dropdown" *ngIf="openDropdown === 'phase'" (click)="$event.stopPropagation()">
+          <div class="ms-actions">
+            <button type="button" class="ms-action-btn" (click)="msSelectAll('phase')">Select All</button>
+            <button type="button" class="ms-action-btn" (click)="msClear('phase')">Clear</button>
+          </div>
+          <label class="ms-option" *ngFor="let ph of phaseOptions">
+            <input type="checkbox" [checked]="isSelected('phase', ph)" (change)="toggleSelection('phase', ph)" />
+            <span>{{ ph }}</span>
+          </label>
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Inline filters (hidden < 800px) -->
+    <div class="navbar-filters">
+      <ng-container *ngTemplateOutlet="filterControlsTpl"></ng-container>
+
+      <div class="filter-item filter-apply-item">
+        <label>&nbsp;</label>
+        <button type="button" class="filter-apply-btn" (click)="applyFilters()" [disabled]="applyingFilters">
+          <span class="filter-apply-spinner" *ngIf="applyingFilters"></span>
+          <span>{{ applyingFilters ? 'Applying…' : 'Apply' }}</span>
+        </button>
+      </div>
+    </div>
+
+
+
+    <div class="header-right">
+      <!-- Handover tab only: the always-visible way back to the client
+           dashboard. The sidebar's Back button shrinks to a bare icon when the
+           sidebar is collapsed, so it cannot be the only exit. -->
+      <button
+        *ngIf="isHandoverTab"
+        type="button"
+        class="back-to-client no-export"
+        (click)="backToClient()"
+        title="Close this tab and return to the client dashboard"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        <span class="back-to-client-label">Back to Client Dashboard</span>
+      </button>
+      <!-- <button class="export-btn no-export" (click)="downloadDashboardImage()" [disabled]="exportingDashboard" title="Download entire dashboard as image">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        {{ exportingDashboard ? 'Exporting…' : 'Export Report' }}
+      </button> -->
+      <!-- Dark/Light mode toggle -->
+          <!-- Compact "Filters" trigger (shown < 800px) -->
+    <button type="button" class="mobile-filter-btn" (click)="openMobileFilterModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </svg>
+      Filters
+      <span class="filter-badge" *ngIf="activeFilterCount > 0">{{ activeFilterCount }}</span>
+    </button>
+      <button class="header-icon-btn" (click)="toggleTheme()" [attr.title]="themeMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+        <svg *ngIf="themeMode === 'dark'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg *ngIf="themeMode === 'light'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+      </button>
+      <!-- Notification bell -->
+      <!-- <div class="notification-wrapper">
+        <button class="header-icon-btn notification-btn" (click)="toggleNotifications($event)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          <span class="notification-badge" *ngIf="recentActivities.length > 0">{{ recentActivities.length }}</span>
+        </button>
+        <div class="notification-popup" *ngIf="showNotifications" (click)="$event.stopPropagation()">
+          <div class="notif-popup-header">
+            <h4>Recent Activities</h4>
+            <button class="notif-close-btn" (click)="showNotifications = false">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="notif-popup-list">
+            <div *ngFor="let activity of recentActivities" class="notif-item">
+              <div class="notif-icon" [style.backgroundColor]="activity.color + '20'" [style.color]="activity.color">
+                <svg *ngIf="activity.icon === 'order'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                <svg *ngIf="activity.icon === 'project'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <svg *ngIf="activity.icon === 'payment'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                <svg *ngIf="activity.icon === 'invoice'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <svg *ngIf="activity.icon === 'alert'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div class="notif-content">
+                <span class="notif-title">{{ activity.title }}</span>
+                <span class="notif-time">{{ activity.time }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="notif-popup-footer">
+            <a class="view-all-link">View All Activities</a>
+          </div>
+        </div>
+      </div> -->
+      <!-- Download icon -->
+      <button class="header-icon-btn no-export" [class.loading]="exportingDashboard" (click)="openDownloadModal()" [disabled]="exportingDashboard" title="Download reports">
+        <svg *ngIf="!exportingDashboard" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        <span *ngIf="exportingDashboard" class="header-btn-spinner"></span>
+      </button>
+
+      <!-- Daily Progress Report export modal -->
+      <div class="dpr-modal-backdrop no-export" *ngIf="dprModalOpen" (click)="closeDownloadModal()">
+        <div class="dpr-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="dpr-modal-title">
+          <div class="dpr-modal-header">
+            <div class="dpr-modal-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="12" width="4" height="9" rx="0.5"/><rect x="10" y="8" width="4" height="13" rx="0.5"/><rect x="17" y="4" width="4" height="17" rx="0.5"/>
+              </svg>
+            </div>
+            <div class="dpr-modal-titles">
+              <h3 id="dpr-modal-title">Daily Progress Reports</h3>
+              <p>Download filtered progress reports</p>
+            </div>
+            <button type="button" class="dpr-modal-close" (click)="closeDownloadModal()" title="Close" aria-label="Close">&times;</button>
+          </div>
+
+          <div class="dpr-modal-chips">
+            <span class="dpr-chip">📅 {{ dprDate }}</span>
+            <span class="dpr-chip" *ngIf="dprContractorLabel">👷 {{ dprContractorLabel }}</span>
+            <span class="dpr-chip" *ngIf="dprRingLabel">◎ {{ dprRingLabel }}</span>
+            <span class="dpr-chip" *ngIf="dprLinkLabel">⎯ {{ dprLinkLabel }}</span>
+          </div>
+
+          <div class="dpr-modal-controls">
+            <input type="date" class="dpr-date-input" [(ngModel)]="dprDate" [disabled]="dprLoadingPdf || dprLoadingExcel" />
+            <label class="dpr-approved-toggle">
+              <input type="checkbox" [(ngModel)]="dprApprovedOnly" [disabled]="dprLoadingPdf || dprLoadingExcel" />
+              <span>✔ Approved Only</span>
+            </label>
+          </div>
+
+          <p class="dpr-modal-error" *ngIf="dprError">{{ dprError }}</p>
+
+          <div class="dpr-modal-actions">
+            <button type="button" class="dpr-export-btn dpr-pdf" (click)="downloadDpr('pdf')" [disabled]="dprLoadingPdf || dprLoadingExcel || !dprDate">
+              {{ dprLoadingPdf ? 'Generating PDF…' : '📄 Export PDF' }}
+            </button>
+            <button type="button" class="dpr-export-btn dpr-excel" (click)="downloadDpr('excel')" [disabled]="dprLoadingPdf || dprLoadingExcel || !dprDate">
+              {{ dprLoadingExcel ? 'Generating Excel…' : '📊 Export Excel' }}
+            </button>
+          </div>
+
+          <button type="button" class="dpr-image-link" (click)="downloadDashboardImage(); closeDownloadModal()">
+            Or download the dashboard as an image
+          </button>
+        </div>
+      </div>
+      <!-- User avatar and info (bound to the logged-in user) -->
+      <div class="user-info" (click)="toggleUserMenu($event)" style="position:relative; cursor:pointer;">
+        <div class="user-avatar">{{ userInitials }}</div>
+        <div class="user-details">
+          <span class="user-name">{{ userName }}</span>
+          <span class="user-role">{{ userRole }}</span>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+
+        <!-- User dropdown -->
+        <div class="user-menu" *ngIf="userMenuOpen" (click)="$event.stopPropagation()">
+          <div class="user-menu-head">
+            <div class="user-avatar sm">{{ userInitials }}</div>
+            <div>
+              <div class="user-menu-name">{{ userName }}</div>
+              <div class="user-menu-mail">{{ auth.user()?.email }}</div>
+            </div>
+          </div>
+          <button type="button" class="user-menu-item" (click)="goProfile()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Profile
+          </button>
+          <button type="button" class="user-menu-item" (click)="goChangePassword()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Change Password
+          </button>
+          <button type="button" class="user-menu-item danger" (click)="doLogout()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Filter Modal -->
+  <div class="filter-modal-backdrop" *ngIf="filterModalOpen" (click)="cancelFilterModal()"></div>
+  <div class="filter-modal" *ngIf="filterModalOpen">
+    <div class="filter-modal-header">
+      <div class="filter-modal-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        Filters
+      </div>
+      <button type="button" class="filter-modal-close" (click)="cancelFilterModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="filter-modal-body">
+      <div class="filter-modal-grid">
+        <div class="filter-modal-field">
+          <label class="filter-modal-label">CONTRACTOR</label>
+          <!-- Single-contractor deployment: the only contractor is pre-selected
+               and the control is disabled — there is nothing to choose. -->
+          <select class="filter-modal-select" [(ngModel)]="modalContractor"
+                  [disabled]="isSingleContractorDeployment"
+                  [title]="isSingleContractorDeployment ? 'Only one contractor in this deployment' : ''">
+            <option value="All Contractors" *ngIf="!isSingleContractorDeployment">All Contractors</option>
+            <option *ngFor="let c of contractorOptions" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+        <div class="filter-modal-field">
+          <label class="filter-modal-label">RING</label>
+          <select class="filter-modal-select" [(ngModel)]="modalRing">
+            <option value="All Rings">All Rings</option>
+            <option *ngFor="let r of regionOptions" [value]="r">{{ r }}</option>
+          </select>
+        </div>
+        <div class="filter-modal-field">
+          <label class="filter-modal-label">LINK</label>
+          <select class="filter-modal-select" [(ngModel)]="modalLink">
+            <option value="All Projects">All Projects</option>
+            <option *ngFor="let p of projectOptions" [value]="p">{{ p }}</option>
+          </select>
+        </div>
+        <div class="filter-modal-field">
+          <label class="filter-modal-label">PHASE</label>
+          <select class="filter-modal-select" [(ngModel)]="modalPhase">
+            <option value="All Phases">All Phases</option>
+            <option *ngFor="let ph of phaseOptions" [value]="ph">{{ ph }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="filter-modal-footer">
+      <button type="button" class="filter-modal-reset" (click)="resetFilters()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1 4 1 10 7 10"/>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </svg>
+        Reset All
+      </button>
+      <div class="filter-modal-footer-right">
+        <button type="button" class="filter-modal-cancel" (click)="cancelFilterModal()">Cancel</button>
+        <button type="button" class="filter-modal-apply" (click)="applyFilterModal()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Report (Overall) filter modal.
+       Same shell as the dashboard filter modal above; scoped to this one card. -->
+  <div class="filter-modal-backdrop" *ngIf="prFilterOpen" (click)="cancelPrFilter()"></div>
+  <div class="filter-modal" *ngIf="prFilterOpen">
+    <div class="filter-modal-header">
+      <div class="filter-modal-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        Progress Report Filters
+      </div>
+      <button type="button" class="filter-modal-close" (click)="cancelPrFilter()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="filter-modal-body">
+      <div class="filter-modal-grid">
+        <div class="filter-modal-field">
+          <label class="filter-modal-label">PHASE</label>
+          <!-- Single-select on purpose: a phase is mandatory upstream. Querying all
+               phases sums work across them while scope stays the route length, which
+               reports impossible completion (~138%). -->
+          <select class="filter-modal-select" [(ngModel)]="prDraftPhaseId">
+            <option *ngFor="let p of prPhaseOptions" [value]="p.phaseId">{{ p.phaseName }}</option>
+          </select>
+        </div>
+        <div class="filter-modal-field">
+          <label class="filter-modal-label">GRANULARITY</label>
+          <select class="filter-modal-select" [(ngModel)]="prDraftGranularity">
+            <option value="DAILY">Daily</option>
+            <option value="WEEKLY">Weekly</option>
+            <option value="MONTHLY">Monthly</option>
+          </select>
+        </div>
+        <!-- CONTRACTOR selector removed: this deployment serves a single
+             contractor, which is already pre-selected globally. The old
+             list was a hardcoded five-slot roster (BPT/OFO/MHD/Al-Jassar/OHI)
+             that does not apply here. -->
+      </div>
+    </div>
+    <div class="filter-modal-footer">
+      <button type="button" class="filter-modal-reset" (click)="resetPrFilter()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1 4 1 10 7 10"/>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </svg>
+        Reset All
+      </button>
+      <div class="filter-modal-footer-right">
+        <button type="button" class="filter-modal-cancel" (click)="cancelPrFilter()">Cancel</button>
+        <button type="button" class="filter-modal-apply" (click)="applyPrFilter()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Filter Modal (shown < 800px, hidden by default) -->
+  <div class="mobile-filter-backdrop" *ngIf="mobileFilterOpen" (click)="cancelMobileFilterModal()"></div>
+  <div class="mobile-filter-modal" *ngIf="mobileFilterOpen">
+    <div class="mobile-filter-header">
+      <div class="mobile-filter-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        Filters
+      </div>
+      <button type="button" class="mobile-filter-close" (click)="cancelMobileFilterModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="mobile-filter-body">
+      <ng-container *ngTemplateOutlet="filterControlsTpl"></ng-container>
+    </div>
+    <div class="mobile-filter-footer">
+      <button type="button" class="mobile-filter-cancel" (click)="cancelMobileFilterModal()">Cancel</button>
+      <button type="button" class="mobile-filter-apply" (click)="applyMobileFilters()" [disabled]="applyingFilters">
+        <span class="filter-apply-spinner" *ngIf="applyingFilters"></span>
+        <span>{{ applyingFilters ? 'Applying…' : 'Apply' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== Analysis Accordions ===== -->
+  <div class="accordion">
+
+  <!-- Progress Analysis (contains the full dashboard) -->
+  <div class="accordion-item" [class.open]="isPanelOpen('progress')">
+    <button class="accordion-header" (click)="toggleAccordion('progress')">
+      <span class="accordion-title">Progress Analysis</span>
+      <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="accordion-panel" *ngIf="isPanelOpen('progress')">
+
+  <!-- KPI Cards Row -->
+  <div class="kpi-groups">
+    <!-- Overall metrics -->
+    <div class="kpi-group kpi-group-overall">
+      <ng-container *ngFor="let kpi of kpiCards.slice(0, 3)">
+        <ng-container *ngTemplateOutlet="kpiCardTpl; context: { $implicit: kpi }"></ng-container>
+      </ng-container>
+    </div>
+    <!-- Phase metrics -->
+    <div class="kpi-group kpi-group-phase">
+      <ng-container *ngFor="let kpi of kpiCards.slice(3)">
+        <ng-container *ngTemplateOutlet="kpiCardTpl; context: { $implicit: kpi }"></ng-container>
+      </ng-container>
+    </div>
+  </div>
+
+  <ng-template #kpiCardTpl let-kpi>
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <div class="kpi-icon" [style.background]="kpi.color + '20'" [style.color]="kpi.color">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path [attr.d]="kpi.iconPath"/>
+          </svg>
+        </div>
+        <span class="kpi-title">{{ kpi.title }}</span>
+      </div>
+      <div class="kpi-value-row">
+        <span class="kpi-value">{{ kpi.value }} <span class="kpi-unit">{{ kpi.unit }}</span></span>
+        <span class="kpi-percent" [style.color]="kpi.color">{{ kpi.percentLabel }}</span>
+      </div>
+      <div class="kpi-subtitle">{{ kpi.subtitle }}</div>
+      <div class="kpi-progress-bar">
+        <div class="kpi-progress-fill" [style.width.%]="kpi.percentage" [style.background]="kpi.color"></div>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Row: Progress Report + 7-Day Daily Progress -->
+  <div class="dashboard-row two-col">
+
+    <!-- Progress Report (Overall) — cumulative % with regression -->
+    <div class="card" #cardCumulative>
+      <div class="card-header">
+        <h3>
+          Progress Report (Overall)
+          <!-- The phase is part of the identity of this number: a single phase is
+               mandatory upstream, so name it rather than let "Overall" imply all. -->
+          <span class="card-subtitle">{{ cumPhaseLabel }}</span>
+          <!-- Partial upstream coverage must be visible: not every contractor host
+               serves the history endpoint yet. -->
+          <span
+            class="coverage-badge"
+            *ngIf="cumCoverageLabel"
+            [class.partial]="cumCoverageIsPartial"
+            [title]="cumCoverageTooltip"
+          >{{ cumCoverageLabel }}</span>
+        </h3>
+        <div class="card-header-actions">
+          <!-- Applied window / granularity at a glance, since the controls that set
+               them now live behind the filter icon. -->
+          <span class="card-filter-summary">
+            {{ cumGranularityLabel }} · {{ cumContractorLabel }}
+          </span>
+          <button
+            type="button"
+            class="card-filter-btn no-export"
+            [class.active]="prActiveFilterCount > 0"
+            title="Filter this chart"
+            aria-label="Filter this chart"
+            (click)="openPrFilter()"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            <span class="card-filter-count" *ngIf="prActiveFilterCount > 0">{{ prActiveFilterCount }}</span>
+          </button>
+          <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Progress Report'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardCumulative, 'Progress Report')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="card-body chart-container" #cumChartHost>
+        <div class="section-loader" *ngIf="cumLoading && cumPoints.length === 0"><div class="spinner"></div></div>
+
+        <!-- Legend. Planned is absent by design: the source reports no plan
+             baseline, so there is no honest series to draw. -->
+        <div class="fc-legend" *ngIf="cumChart">
+          <span class="fc-legend-item">
+            <i class="fc-legend-line" style="background:#22c55e"></i>Actual (cumulative)
+          </span>
+          <span class="fc-legend-item" *ngFor="let r of cumChart.rays">
+            <i class="fc-legend-line fc-legend-line--dashed" [style.background]="r.color"></i>{{ r.label }}
+          </span>
+        </div>
+
+        <svg
+          class="fc-svg"
+          *ngIf="cumChart as c"
+          [attr.viewBox]="'0 0 ' + c.width + ' ' + c.height"
+          preserveAspectRatio="none"
+          (mousemove)="onCumHover($event)"
+          (mouseleave)="onCumLeave()"
+        >
+          <!-- Y gridlines + km labels -->
+          <g class="fc-grid">
+            <line *ngFor="let t of c.yTicks" [attr.x1]="c.plot.x" [attr.x2]="c.plot.x + c.plot.w" [attr.y1]="t.y" [attr.y2]="t.y" />
+          </g>
+          <g class="fc-axis-label">
+            <text *ngFor="let t of c.yTicks" [attr.x]="c.plot.x - 8" [attr.y]="t.y + 3" text-anchor="end">{{ t.label }}</text>
+          </g>
+          <text class="fc-axis-title" [attr.x]="14" [attr.y]="c.plot.y + c.plot.h / 2"
+                [attr.transform]="'rotate(-90 14 ' + (c.plot.y + c.plot.h / 2) + ')'" text-anchor="middle">
+            Cumulative fibre installed (km)
+          </text>
+
+          <!-- X ticks -->
+          <g class="fc-axis-label">
+            <text *ngFor="let t of c.xTicks" [attr.x]="t.x" [attr.y]="c.plot.y + c.plot.h + 18" text-anchor="middle">{{ t.label }}</text>
+          </g>
+
+          <!-- Compressed-axis break marker, only present when the forecast horizon
+               dwarfs the observed window. -->
+          <g class="fc-break" *ngIf="c.axisBreak as b">
+            <line [attr.x1]="b.x1 + 3" [attr.x2]="b.x2 - 3" [attr.y1]="c.plot.y + c.plot.h" [attr.y2]="c.plot.y + c.plot.h" />
+            <text [attr.x]="(b.x1 + b.x2) / 2" [attr.y]="c.plot.y + c.plot.h + 18" text-anchor="middle">⁄⁄</text>
+          </g>
+
+          <!-- Total scope: where a ray meets this line is its completion date. -->
+          <g *ngIf="c.scope as sc">
+            <line class="fc-scope-line" [attr.x1]="c.plot.x" [attr.x2]="c.plot.x + c.plot.w" [attr.y1]="sc.y" [attr.y2]="sc.y" />
+            <text class="fc-scope-label" [attr.x]="c.plot.x + 6" [attr.y]="sc.y - 5">{{ sc.label }}</text>
+          </g>
+
+          <!-- Forecast rays. Labels sit in separated gutter slots with a leader back
+               to the endpoint: all three finish on the scope line close together, so
+               endpoint-anchored labels overlapped into an unreadable pile. -->
+          <g *ngFor="let r of c.rays">
+            <path class="fc-ray" *ngIf="r.d" [attr.d]="r.d" [attr.stroke]="r.color" [class.fc-ray--dotted]="r.key !== 'forecast'" />
+            <path class="fc-leader" *ngIf="r.leader" [attr.d]="r.leader" [attr.stroke]="r.color" />
+            <circle *ngIf="r.d" [attr.cx]="r.endX" [attr.cy]="r.endY" r="3.5" [attr.fill]="r.color" />
+            <text class="fc-ray-label" *ngIf="r.d" [attr.x]="r.labelX" [attr.y]="r.labelY - 3" [attr.fill]="r.color">
+              {{ r.shortLabel }}
+            </text>
+            <text class="fc-ray-date" *ngIf="r.d" [attr.x]="r.labelX" [attr.y]="r.labelY + 8" [attr.fill]="r.color">
+              {{ r.endDateLabel }}
+            </text>
+          </g>
+
+          <!-- Today -->
+          <g *ngIf="c.today as td">
+            <line class="fc-today" [attr.x1]="td.x" [attr.x2]="td.x" [attr.y1]="c.plot.y" [attr.y2]="c.plot.y + c.plot.h" />
+            <text class="fc-today-label" [attr.x]="td.x" [attr.y]="c.plot.y - 8" text-anchor="middle">Today</text>
+            <circle [attr.cx]="td.x" [attr.cy]="td.y" r="4" fill="#22c55e" />
+          </g>
+
+          <!-- Observed progress -->
+          <path class="fc-actual" [attr.d]="c.actualPath" />
+          <circle class="fc-actual-dot" *ngFor="let p of c.actualPoints" [attr.cx]="p.x" [attr.cy]="p.y" r="2" />
+          <text class="fc-value-label" *ngFor="let v of c.valueLabels" [attr.x]="v.x" [attr.y]="v.y - 7" text-anchor="middle">{{ v.text }}</text>
+
+          <!-- Hover marker -->
+          <g *ngIf="cumHoverMarker as hm">
+            <line class="fc-hover-line" [attr.x1]="hm.x" [attr.x2]="hm.x" [attr.y1]="c.plot.y" [attr.y2]="c.plot.y + c.plot.h" />
+            <circle [attr.cx]="hm.x" [attr.cy]="hm.y" r="5" fill="#22c55e" stroke="#0b1220" stroke-width="2" />
+          </g>
+        </svg>
+
+        <!-- Actual (To Date) callout -->
+        <div class="fc-callout" *ngIf="cumActualCallout as a">
+          <div class="fc-callout-title">Actual (to date)</div>
+          <div class="fc-callout-row"><span>Completed</span><b>{{ a.completedKm }}</b></div>
+          <div class="fc-callout-row"><span>Completion</span><b>{{ a.pct }}</b></div>
+          <div class="fc-callout-row"><span>Avg pace</span><b>{{ a.pace }}</b></div>
+        </div>
+
+        <!-- Forecast Summary. Below the plot rather than inset over it: the rays
+             sweep through the whole upper-right area, and an overlay there clipped
+             them. It also replaces the forecast stat tiles that used to sit in the
+             footer, so the same numbers aren't stated twice. -->
+        <div class="fc-summary fc-summary--block" *ngIf="cumForecastRows.length">
+          <div class="fc-summary-title">Forecast summary</div>
+          <table class="fc-summary-table">
+            <thead>
+              <!-- Unit tracks the granularity selector, so the number never needs
+                   converting in the reader's head. -->
+              <tr><th>Scenario</th><th>Pace ({{ cumPaceUnit }})</th><th>Projected completion</th><th>Days left</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of cumForecastRows">
+                <td [style.color]="r.color">{{ r.scenario }}</td>
+                <td [style.color]="r.color">{{ r.pace }}</td>
+                <td [style.color]="r.color">{{ r.date }}</td>
+                <td [style.color]="r.color">{{ r.days }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="fc-summary-foot">All scenarios finish at {{ cumScopeLabel }} scope — only the date differs.</div>
+        </div>
+
+        <!-- Point detail on hover -->
+        <div
+          class="chart-tooltip no-export"
+          *ngIf="cumHover as h"
+          [style.left.px]="h.left"
+          [style.top.px]="h.top"
+        >
+          <div class="chart-tooltip-date">{{ cumHoverDate }}</div>
+          <div class="chart-tooltip-row">
+            <span class="chart-tooltip-key"><i class="chart-tooltip-swatch" style="background:#22c55e"></i>Cumulative</span>
+            <span class="chart-tooltip-val" style="color:#22c55e">{{ h.point.cumulativeKm | number:'1.2-2' }} km</span>
+          </div>
+          <div class="chart-tooltip-row">
+            <span class="chart-tooltip-key">Completion</span>
+            <span class="chart-tooltip-val">{{ h.point.actualPct }}%</span>
+          </div>
+          <div class="chart-tooltip-row">
+            <span class="chart-tooltip-key">This period</span>
+            <span class="chart-tooltip-val">+{{ h.point.periodKm | number:'1.2-2' }} km</span>
+          </div>
+          <div class="chart-tooltip-row">
+            <span class="chart-tooltip-key">Segments</span>
+            <span class="chart-tooltip-val">{{ h.point.segments }}</span>
+          </div>
+        </div>
+        <div class="empty-hint" *ngIf="!cumLoading && cumPoints.length === 0">{{ cumError || 'No data for the selected range.' }}</div>
+      </div>
+      <div class="pr-stats" *ngIf="cumStats as s">
+        <div class="pr-stat"><span class="pr-stat-label">Start Date</span><span class="pr-stat-value">{{ s.startLabel }}</span></div>
+        <div class="pr-stat"><span class="pr-stat-label">End Date</span><span class="pr-stat-value">{{ s.endLabel }}</span></div>
+        <div class="pr-stat"><span class="pr-stat-label">Duration</span><span class="pr-stat-value">{{ s.durationDays }} Days</span></div>
+        <div class="pr-stat"><span class="pr-stat-label">Actual (Current)</span><span class="pr-stat-value" style="color:#22c55e">{{ s.actualCurrent }}%</span></div>
+        <div class="pr-stat"><span class="pr-stat-label">Completed</span><span class="pr-stat-value">{{ s.scopeLabel }}</span></div>
+        <!-- Current pace, est. completion, best/worst and days remaining all moved
+             into the Forecast summary table above, which states them per scenario
+             instead of collapsing them into single tiles. -->
+        <!-- Variance is omitted entirely when upstream reports no plan baseline:
+             rendering 0 would assert we are exactly on a plan that doesn't exist. -->
+        <div class="pr-stat" *ngIf="s.variance !== null"><span class="pr-stat-label">Variance vs Plan</span><span class="pr-stat-value" [style.color]="s.variance! < 0 ? '#ef4444' : '#22c55e'">{{ s.variance }} km</span></div>
+      </div>
+      <div class="pr-note" *ngIf="cumPoints.length > 0">
+        <span *ngIf="!cumHasPlanBaseline">No plan baseline in the source data — planned/variance figures are unavailable.</span>
+        <!-- Say which contractors are reconstructed rather than upstream-reported. -->
+        <span *ngIf="cumDerivedContractors">
+          {{ cumDerivedContractors }} rebuilt from segment records — cumulative totals are accurate, per-period approval splits are approximate.
+        </span>
+        <span *ngIf="cumMissingContractors">No data available for {{ cumMissingContractors }}.</span>
+        <!-- Never show a corrected forecast as though upstream had reported it. -->
+        <span *ngIf="cumPaceCorrected">
+          The source reported a productivity figure the recorded history cannot support, so the
+          forecast dates above are computed from the observed pace instead.
+        </span>
+      </div>
+    </div>
+
+    <!-- 7-Day Daily Progress — phase-filtered -->
+    <div class="card" #cardDaily>
+      <div class="card-header">
+        <h3>Daily Progress <span class="card-subtitle">{{ dailyPhaseLabel }}</span></h3>
+        <div class="card-header-actions">
+          <label class="date-filter">
+            <span>From</span>
+            <input type="date" [(ngModel)]="dailyFromDate" [max]="dailyToDate || today" (ngModelChange)="onDailyDateChange()" />
+          </label>
+          <label class="date-filter">
+            <span>To</span>
+            <input type="date" [(ngModel)]="dailyToDate" [min]="dailyFromDate" [max]="today" (ngModelChange)="onDailyDateChange()" />
+          </label>
+          <select class="granularity-select" [(ngModel)]="dailyPhaseFilter" (ngModelChange)="onDailyPhaseChange()">
+            <option value="all">All Phases</option>
+            <option *ngFor="let p of dailyPhaseOptions" [value]="p.phaseId">{{ p.phaseName }}</option>
+          </select>
+          <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Daily Progress'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardDaily, 'Daily Progress')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="card-body chart-container">
+        <div class="section-loader" *ngIf="isLoading && dailyBars.length === 0"><div class="spinner"></div></div>
+        <canvas #dailyPhaseCanvas class="chart-canvas" *ngIf="dailyBars.length > 0"></canvas>
+        <div class="empty-hint" *ngIf="!isLoading && dailyBars.length === 0">No daily data available.</div>
+      </div>
+      <div class="pr-stats">
+        <div class="pr-stat"><span class="pr-stat-label">Phase</span><span class="pr-stat-value">{{ dailyPhaseLabel }}</span></div>
+        <div class="pr-stat"><span class="pr-stat-label">Unit</span><span class="pr-stat-value">km / day</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Charts & Tables — 50/50.
+       "Planned vs Actual Progress (Overall)" was removed: its planned series was a
+       straight synthetic ramp (upstream reports no plan baseline), so the chart
+       only ever showed a fabricated gap. -->
+  <div class="dashboard-row two-col-even">
+
+    <!-- Ring Progress -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Ring Progress</h3>
+        <button class="card-dl-btn no-export" title="Download as Excel" (click)="downloadTableXlsx('ringProgress')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        </button>
+      </div>
+      <div class="card-body table-scroll">
+        <div class="section-loader" *ngIf="isLoading && ringRows.length === 0"><div class="spinner"></div></div>
+        <table class="data-table" *ngIf="ringRows.length > 0">
+          <thead>
+            <tr>
+              <th>Ring Name</th>
+              <th>Planned(km)</th>
+              <th>Deployed(km)</th>
+              <th>Balance(km)</th>
+              <th>Completion</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ring of ringRows">
+              <td class="text-white">{{ ring.name }}</td>
+              <td>{{ ring.planned }}</td>
+              <td>{{ ring.deployed }}</td>
+              <td>{{ ring.balance }}</td>
+              <td>
+                <div class="progress-cell">
+                  <div class="mini-progress-bar">
+                    <div class="mini-progress-fill" [style.width.%]="ring.completion" [style.background]="getProgressColor(ring.completion)"></div>
+                  </div>
+                  <span [style.color]="getProgressColor(ring.completion)">{{ ring.completion }}%</span>
+                </div>
+              </td>
+            </tr>
+            <tr class="total-row">
+              <td class="text-white"><strong>Total</strong></td>
+              <td><strong>{{ ringTotal.planned | number }}</strong></td>
+              <td><strong>{{ ringTotal.deployed }}</strong></td>
+              <td><strong>{{ ringTotal.balance | number }}</strong></td>
+              <td>
+                <div class="progress-cell">
+                  <div class="mini-progress-bar">
+                    <div class="mini-progress-fill" [style.width.%]="ringTotal.completion" [style.background]="getProgressColor(ringTotal.completion)"></div>
+                  </div>
+                  <span [style.color]="getProgressColor(ringTotal.completion)"><strong>{{ ringTotal.completion }}%</strong></span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Top Links by Progress -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Top Links by Progress</h3>
+        <button class="card-dl-btn no-export" title="Download as Excel" (click)="downloadTableXlsx('topLinks')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        </button>
+      </div>
+      <div class="card-body table-scroll" [class.expanded]="showAllLinks">
+        <div class="section-loader" *ngIf="isLoading && topLinks.length === 0"><div class="spinner"></div></div>
+        <table class="data-table" *ngIf="topLinks.length > 0">
+          <thead>
+            <tr>
+              <th>Link Name</th>
+              <th>Planned (km)</th>
+              <th>Completed (km)</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let link of (showAllLinks ? allLinks : topLinks)">
+              <td class="text-cyan">{{ link.id }}</td>
+              <td>{{ link.planned }}</td>
+              <td>{{ link.deployed }}</td>
+              <td>
+                <div class="progress-cell">
+                  <div class="mini-progress-bar">
+                    <div class="mini-progress-fill" [style.width.%]="link.completion" [style.background]="getProgressColor(link.completion)"></div>
+                  </div>
+                  <span [style.color]="getProgressColor(link.completion)">{{ link.completion }}%</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <a class="view-all-link" href="javascript:void(0)" *ngIf="allLinks.length > 5" (click)="showAllLinks = !showAllLinks">
+          {{ showAllLinks ? 'Show less' : 'View all links (' + allLinks.length + ')' }} &rarr;
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 4: Link Execution, Alerts -->
+  <div class="dashboard-row three-col">
+
+    <!-- Link Executions Status -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Link Executions Status</h3>
+        <div class="card-header-actions">
+          <span class="header-badge">{{ linkExecCount }} Links</span>
+          <button class="card-dl-btn no-export" title="Download as Excel" (click)="downloadTableXlsx('linkExecutions')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="card-body table-scroll">
+        <div class="section-loader" *ngIf="isLoading && linkExecRows.length === 0"><div class="spinner"></div></div>
+        <table class="data-table" *ngIf="linkExecRows.length > 0">
+          <thead>
+            <tr>
+              <th>Link Name</th>
+              <th>Ring</th>
+              <th>Completion</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of linkExecRows">
+              <td class="text-white">{{ row.linkName }}</td>
+              <td>{{ row.ring }}</td>
+              <td>
+                <div class="progress-cell">
+                  <div class="mini-progress-bar">
+                    <div class="mini-progress-fill" [style.width.%]="row.delayDays" style="background: #ef4444;"></div>
+                  </div>
+                  <span style="color: #ef4444;">{{ row.delayDays }}%</span>
+                </div>
+              </td>
+              <td>
+                <span class="status-badge status-delayed">{{ row.status }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <a class="view-all-link" href="javascript:void(0)">View all links &rarr;</a>
+      </div>
+    </div>
+
+    <!-- Alerts & Notifications -->
+    <!-- <div class="card">
+      <div class="card-header">
+        <h3>Alerts & Notifications</h3>
+        <a class="view-all-link-header" href="javascript:void(0)">View all</a>
+      </div>
+      <div class="card-body alerts-body">
+        <div class="alert-item" *ngFor="let alert of alerts">
+          <div class="alert-icon-wrap" [ngClass]="'alert-icon-' + alert.type">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path [attr.d]="getAlertIcon(alert.type)"/>
+            </svg>
+          </div>
+          <div class="alert-content">
+            <p class="alert-message">{{ alert.title }}</p>
+            <p class="alert-subtitle">{{ alert.subtitle }}</p>
+          </div>
+          <span class="alert-time">{{ alert.time }}</span>
+        </div>
+      </div>
+    </div> -->
+
+     <!-- Contractor Comparison Bar Chart -->
+    <div class="card" #cardContractorCompare>
+      <div class="card-header">
+        <h3>Contractor Comparison (Planned vs Deployed)</h3>
+        <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Contractor Comparison'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardContractorCompare, 'Contractor Comparison')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        </button>
+      </div>
+      <div class="card-body chart-container">
+        <div class="section-loader" *ngIf="isLoading && contractorCompareNames.length === 0"><div class="spinner"></div></div>
+        <canvas #contractorCompareCanvas class="chart-canvas" *ngIf="!isLoading || contractorCompareNames.length > 0"></canvas>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item">
+          <span class="legend-square" style="background: #3b82f6;"></span>
+          <span>Planned (km)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-square" style="background: #22c55e;"></span>
+          <span>Deployed (km)</span>
+        </div>
+      </div>
+    </div>
+
+       <!-- Phase-wise Segment Breakdown Line Chart -->
+    <div class="card" #cardPhaseStacked>
+      <div class="card-header">
+        <h3>Phase-wise Segment Breakdown</h3>
+        <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Phase-wise Segment Breakdown'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardPhaseStacked, 'Phase-wise Segment Breakdown')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        </button>
+      </div>
+      <div class="card-body chart-container">
+        <div class="section-loader" *ngIf="isLoading && phaseStackedLabels.length === 0"><div class="spinner"></div></div>
+        <canvas #phaseStackedCanvas class="chart-canvas" *ngIf="!isLoading || phaseStackedLabels.length > 0"></canvas>
+      </div>
+      <div class="chart-legend" *ngIf="!isLoading || phaseStackedLabels.length > 0">
+        <div class="legend-item">
+          <span class="legend-line" style="background: #22c55e;"></span>
+          <span>Completed</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-line" style="background: #3b82f6;"></span>
+          <span>In Progress</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-line" style="background: #64748b;"></span>
+          <span>Pending</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-line" style="background: #ef4444;"></span>
+          <span>Blocked</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Row 5: Contractor Compare, Ring Heatmap, Timeline Trend -->
+  <div class="dashboard-row three-col">
+
+   
+    <!-- Contractor vs Target Gauge -->
+    <div class="card" #cardGauge>
+      <div class="card-header">
+        <h3>Contractor vs Target</h3>
+        <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Contractor vs Target'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardGauge, 'Contractor vs Target')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="section-loader" *ngIf="isLoading && contractorGauges.length === 0"><div class="spinner"></div></div>
+        <div class="gauge-grid" *ngIf="contractorGauges.length > 0">
+          <div class="gauge-item" *ngFor="let g of contractorGauges">
+            <svg viewBox="0 0 120 120" class="gauge-ring">
+              <!-- Background circle -->
+              <circle cx="60" cy="60" r="50" fill="none" stroke="#1e3a5f" stroke-width="10"/>
+              <!-- Progress arc -->
+              <circle cx="60" cy="60" r="50" fill="none"
+                [attr.stroke]="g.color"
+                stroke-width="10"
+                stroke-linecap="round"
+                [attr.stroke-dasharray]="g.dashArray"
+                stroke-dashoffset="0"
+                transform="rotate(-90 60 60)"/>
+              <!-- Center text -->
+              <text x="60" y="56" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="700">{{ g.pct }}%</text>
+              <text x="60" y="72" text-anchor="middle" fill="#94a3b8" font-size="9">of target</text>
+            </svg>
+            <span class="gauge-label">{{ g.name }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Ring Completion Heatmap -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Ring x Contractor Completion Heatmap</h3>
+        <button class="card-dl-btn no-export" title="Download as Excel" (click)="downloadTableXlsx('ringHeatmap')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        </button>
+      </div>
+      <div class="card-body table-scroll">
+        <div class="section-loader" *ngIf="isLoading && ringContractorMatrix.length === 0"><div class="spinner"></div></div>
+        <table class="heatmap-table" *ngIf="ringContractorMatrix.length > 0">
+          <thead>
+            <tr>
+              <th>Ring</th>
+              <th *ngFor="let cn of heatmapContractorNames">{{ cn }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of ringContractorMatrix">
+              <td class="text-white">{{ row.ringName }}</td>
+              <td *ngFor="let cell of row.cells"
+                  class="heatmap-cell"
+                  [style.background]="getHeatmapBg(cell)"
+                  [style.color]="getHeatmapText(cell)">
+                {{ cell }}%
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Timeline Trend Line Chart -->
+    <div class="card" #cardTimeline>
+      <div class="card-header">
+        <h3>Cumulative Progress Timeline</h3>
+        <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Cumulative Progress Timeline'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardTimeline, 'Cumulative Progress Timeline')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        </button>
+      </div>
+      <div class="card-body chart-container">
+        <div class="section-loader" *ngIf="isLoading && timelineDates.length === 0"><div class="spinner"></div></div>
+        <canvas #timelineTrendCanvas class="chart-canvas" *ngIf="!isLoading || timelineDates.length > 0"></canvas>
+      </div>
+      <div class="chart-legend" *ngIf="!isLoading || timelineDates.length > 0">
+        <div class="legend-item">
+          <span class="legend-line" style="background: #3b82f6;"></span>
+          <span>Cumulative Planned</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot" style="background: #22c55e;"></span>
+          <span>Completed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 6: Work Progress, Phase-wise Progress, Layer wise Progress -->
+  <div class="dashboard-row three-col">
+
+    <!-- Work Progress (ported from the old dashboard) -->
+    <div class="card" #cardWorkProgress>
+      <div class="card-header">
+        <h3>Work Progress</h3>
+        <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Work Progress'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardWorkProgress, 'Work Progress')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        </button>
+      </div>
+      <p class="chart-subtitle">Total length by approval state</p>
+      <div class="card-body chart-container chart-container--tall">
+        <div class="section-loader" *ngIf="isLoading && workProgressSlices.length === 0"><div class="spinner"></div></div>
+        <canvas
+          #workProgressCanvas
+          class="chart-canvas chart-canvas--tall chart-canvas--interactive"
+          *ngIf="workProgressSlices.length > 0"
+          style="cursor: pointer"
+          (click)="onWorkProgressClick($event)"
+          (mousemove)="onWorkProgressHover($event)"
+          (mouseleave)="clearWorkProgressHover()"></canvas>
+        <div class="empty-hint" *ngIf="!isLoading && workProgressSlices.length === 0">No progress data available.</div>
+        <div
+          class="chart-tooltip no-export"
+          *ngIf="workProgressHover as hv"
+          [style.left.px]="hv.x + 14"
+          [style.top.px]="hv.y + 10">
+          <div class="chart-tooltip-date">{{ hv.title }}</div>
+          <div class="chart-tooltip-row" *ngFor="let r of hv.rows">
+            <span class="chart-tooltip-key"><i class="chart-tooltip-swatch" [style.background]="r.color"></i>{{ r.label }}</span>
+            <span class="chart-tooltip-val">{{ r.value }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="chart-legend" *ngIf="workProgressSlices.length > 0">
+        <div
+          class="legend-item"
+          *ngFor="let s of workProgressSlices; let i = index"
+          style="cursor: pointer"
+          [style.opacity]="workProgressSelected === null || workProgressSelected === i ? 1 : 0.4"
+          (click)="toggleWorkProgressSlice(i)">
+          <span class="legend-square" [style.background]="s.color"></span>
+          <span>{{ s.label }} ({{ s.percent | number:'1.2-2' }}%)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase-wise Progress (ported from the old dashboard) -->
+    <div class="card" #cardPhaseWise>
+      <div class="card-header">
+        <h3>Phase-wise Progress</h3>
+        <div class="card-header-actions">
+          <button class="card-dl-btn no-export" title="Download as Excel" [disabled]="phaseWiseLabels.length === 0" (click)="downloadTableXlsx('phaseWiseProgress')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M9 13l6 6m0-6l-6 6"/></svg>
+          </button>
+          <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Phase-wise Progress'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardPhaseWise, 'Phase-wise Progress')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          </button>
+        </div>
+      </div>
+      <p class="chart-subtitle">Per phase completion against total route length</p>
+      <div class="card-body chart-container chart-container--tall">
+        <div class="section-loader" *ngIf="isLoading && phaseWiseLabels.length === 0"><div class="spinner"></div></div>
+        <canvas
+          #phaseWiseCanvas
+          class="chart-canvas chart-canvas--tall chart-canvas--interactive"
+          *ngIf="!isLoading || phaseWiseLabels.length > 0"
+          (mousemove)="onPhaseWiseHover($event)"
+          (mouseleave)="clearPhaseWiseHover()"></canvas>
+        <div
+          class="chart-tooltip no-export"
+          *ngIf="phaseWiseHover as hv"
+          [style.left.px]="hv.x + 14"
+          [style.top.px]="hv.y + 10">
+          <div class="chart-tooltip-date">{{ hv.title }}</div>
+          <div class="chart-tooltip-row" *ngFor="let r of hv.rows">
+            <span class="chart-tooltip-key"><i class="chart-tooltip-swatch" [style.background]="r.color"></i>{{ r.label }}</span>
+            <span class="chart-tooltip-val">{{ r.value }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="chart-legend" *ngIf="!isLoading || phaseWiseLabels.length > 0">
+        <div class="legend-item">
+          <span class="legend-square" style="background: #22c55e;"></span>
+          <span>Approved (Client)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-square" style="background: #f59e0b;"></span>
+          <span>In Progress</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-square" style="background: #e11919;"></span>
+          <span>Pending</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer wise Progress (ported from the old dashboard) -->
+    <div class="card" #cardLayerWise>
+      <div class="card-header">
+        <h3>Layer wise Progress</h3>
+        <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Layer wise Progress'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardLayerWise, 'Layer wise Progress')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        </button>
+      </div>
+      <p class="chart-subtitle">Work length per phase by approval state</p>
+      <div class="card-body chart-container chart-container--tall">
+        <div class="section-loader" *ngIf="isLoading && layerWiseLabels.length === 0"><div class="spinner"></div></div>
+        <canvas
+          #layerWiseCanvas
+          class="chart-canvas chart-canvas--tall chart-canvas--interactive"
+          *ngIf="!isLoading || layerWiseLabels.length > 0"
+          (mousemove)="onLayerWiseHover($event)"
+          (mouseleave)="clearLayerWiseHover()"></canvas>
+        <div
+          class="chart-tooltip no-export"
+          *ngIf="layerWiseHover as hv"
+          [style.left.px]="hv.x + 14"
+          [style.top.px]="hv.y + 10">
+          <div class="chart-tooltip-date">{{ hv.title }}</div>
+          <div class="chart-tooltip-row" *ngFor="let r of hv.rows">
+            <span class="chart-tooltip-key"><i class="chart-tooltip-swatch" [style.background]="r.color"></i>{{ r.label }}</span>
+            <span class="chart-tooltip-val">{{ r.value }}</span>
+          </div>
+          <div class="chart-tooltip-row chart-tooltip-total" *ngIf="hv.footer">
+            <span class="chart-tooltip-key">{{ hv.footer }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="chart-legend" *ngIf="!isLoading || layerWiseLabels.length > 0">
+        <div class="legend-item">
+          <span class="legend-square" style="background: #22c55e;"></span>
+          <span>Approved (Client)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-square" style="background: #f59e0b;"></span>
+          <span>In Progress</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-square" style="background: #e11919;"></span>
+          <span>Rejected</span>
+        </div>
+      </div>
+    </div>
+
+ 
+
+
+    <!-- PAC Certificate Timeline -->
+    <!-- <div class="card">
+      <div class="card-header">
+        <h3>PAC Certificate Timeline</h3>
+      </div>
+      <div class="card-body chart-container">
+        <canvas #pacTimelineCanvas class="chart-canvas"></canvas>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item">
+          <span class="legend-square" style="background: #22c55e;"></span>
+          <span>Approved</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-square" style="background: #f59e0b;"></span>
+          <span>Pending</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-square" style="background: #ef4444;"></span>
+          <span>Rejected</span>
+        </div>
+      </div>
+    </div> -->
+  </div>
+
+  <!-- Row 7: Trenching-type-wise Progress (/api/dashboard/trenching-type-wise-progress) -->
+  <div class="dashboard-row two-col">
+
+    <!-- Completion per trench profile -->
+    <div class="card" #cardTrenchingProgress>
+      <div class="card-header">
+        <h3>Trenching Type Progress</h3>
+        <div class="card-header-actions">
+          <button class="card-dl-btn no-export" title="Download as Excel" (click)="downloadTableXlsx('trenchingTypeProgress')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M9 13l6 6m0-6l-6 6"/></svg>
+          </button>
+          <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Trenching Type Progress'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardTrenchingProgress, 'Trenching Type Progress')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          </button>
+        </div>
+      </div>
+      <p class="chart-subtitle">Each profile's progress against its own planned length</p>
+      <div class="tt-stats" *ngIf="trenchingRows.length > 0">
+        <span class="tt-stat"><b>{{ trenchingTotals.totalSegmentCount | number }}</b> segments</span>
+        <span class="tt-stat"><b>{{ trenchingTotals.totalRockPercentage | number:'1.1-1' }}%</b> rock</span>
+        <span class="tt-stat"><b>{{ trenchingTotals.totalRockVolume | number:'1.0-0' }}</b> m³ rock</span>
+        <span class="tt-stat"><b>{{ trenchingTotals.totalSandVolume | number:'1.0-0' }}</b> m³ sand</span>
+        <span class="tt-stat"><b>{{ trenchingTotals.totalExtraExcavationVolume | number:'1.0-0' }}</b> m extra excavation</span>
+      </div>
+      <div class="card-body chart-container">
+        <div class="section-loader" *ngIf="trenchingLoading && trenchingRows.length === 0"><div class="spinner"></div></div>
+        <canvas
+          #trenchingProgressCanvas
+          class="chart-canvas chart-canvas--interactive"
+          *ngIf="trenchingRows.length > 0"
+          (mousemove)="onTrenchingProgressHover($event)"
+          (mouseleave)="clearTrenchingProgressHover()"></canvas>
+        <div class="empty-hint" *ngIf="!trenchingLoading && trenchingRows.length === 0">No trenching type data available.</div>
+        <div
+          class="chart-tooltip no-export"
+          *ngIf="trenchingProgressHover as hv"
+          [style.left.px]="hv.x + 14"
+          [style.top.px]="hv.y + 10">
+          <div class="chart-tooltip-date">{{ hv.title }}</div>
+          <div class="chart-tooltip-row" *ngFor="let r of hv.rows">
+            <span class="chart-tooltip-key"><i class="chart-tooltip-swatch" [style.background]="r.color"></i>{{ r.label }}</span>
+            <span class="chart-tooltip-val">{{ r.value }}</span>
+          </div>
+          <div class="chart-tooltip-row chart-tooltip-total" *ngIf="hv.footer">
+            <span class="chart-tooltip-key">{{ hv.footer }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="chart-legend" *ngIf="trenchingRows.length > 0">
+        <div class="legend-item">
+          <span class="legend-square" style="background: #22c55e;"></span>
+          <span>Completed</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-square" style="background: #f59e0b;"></span>
+          <span>In Progress</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-square" style="background: #e11919;"></span>
+          <span>Pending</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- How the work is distributed: by planned length, or by excavated volume -->
+    <div class="card" #cardTrenchingSplit>
+      <div class="card-header">
+        <h3>Trenching Type Split</h3>
+        <div class="card-header-actions">
+          <select
+            class="granularity-select no-export"
+            [(ngModel)]="trenchingSplitMode"
+            (ngModelChange)="onTrenchingSplitModeChange()"
+            title="What the donut splits">
+            <option value="length">Length</option>
+            <option value="volume">Volume</option>
+          </select>
+          <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Trenching Type Split'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardTrenchingSplit, 'Trenching Type Split')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          </button>
+        </div>
+      </div>
+      <p class="chart-subtitle">
+        {{ trenchingSplitMode === 'volume' ? 'Excavated volume by material (m³)' : 'Planned length share by trench profile' }}
+      </p>
+      <div class="card-body chart-container">
+        <div class="section-loader" *ngIf="trenchingLoading && trenchingSplitSlices.length === 0"><div class="spinner"></div></div>
+        <canvas
+          #trenchingSplitCanvas
+          class="chart-canvas chart-canvas--interactive"
+          *ngIf="trenchingSplitSlices.length > 0"
+          (mousemove)="onTrenchingSplitHover($event)"
+          (mouseleave)="clearTrenchingSplitHover()"></canvas>
+        <div class="empty-hint" *ngIf="!trenchingLoading && trenchingSplitSlices.length === 0">No trenching type data available.</div>
+        <div
+          class="chart-tooltip no-export"
+          *ngIf="trenchingSplitHover as hv"
+          [style.left.px]="hv.x + 14"
+          [style.top.px]="hv.y + 10">
+          <div class="chart-tooltip-date">{{ hv.title }}</div>
+          <div class="chart-tooltip-row" *ngFor="let r of hv.rows">
+            <span class="chart-tooltip-key"><i class="chart-tooltip-swatch" [style.background]="r.color"></i>{{ r.label }}</span>
+            <span class="chart-tooltip-val">{{ r.value }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="chart-legend" *ngIf="trenchingSplitSlices.length > 0">
+        <div class="legend-item" *ngFor="let s of trenchingSplitSlices" [title]="s.title">
+          <span class="legend-square" [style.background]="s.color"></span>
+          <span>{{ s.label }} · {{ formatTrenchingValue(s.value) }} {{ trenchingSplitUnit }} ({{ s.percent | number:'1.1-1' }}%)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    </div><!-- /accordion-panel -->
+  </div><!-- /Progress Analysis -->
+
+  <!-- Project Analysis -->
+  <div class="accordion-item" [class.open]="isPanelOpen('project')">
+    <button class="accordion-header" (click)="toggleAccordion('project')">
+      <span class="accordion-title">Project Analysis</span>
+      <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="accordion-panel" *ngIf="isPanelOpen('project')">
+      <div class="dashboard-row three-col">
+
+        <!-- Phase Progress -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Phase Progress</h3>
+            <button class="card-dl-btn no-export" title="Download as Excel" (click)="downloadTableXlsx('phaseProgress')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </button>
+          </div>
+          <div class="card-body table-scroll">
+            <div class="section-loader" *ngIf="isLoading && phaseRows.length === 0"><div class="spinner"></div></div>
+            <table class="data-table" *ngIf="phaseRows.length > 0">
+              <thead>
+                <tr>
+                  <th>Phase</th>
+                  <th>Planned(km)</th>
+                  <th>Deployed(km)</th>
+                  <th>Completion</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let phase of phaseRows">
+                  <td class="text-white">{{ phase.phase }}</td>
+                  <td>{{ phase.planned }}</td>
+                  <td>{{ phase.deployed }}</td>
+                  <td>
+                    <div class="progress-cell">
+                      <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" [style.width.%]="phase.completion" [style.background]="getProgressColor(phase.completion)"></div>
+                      </div>
+                      <span [style.color]="getProgressColor(phase.completion)">{{ phase.completion }}%</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="total-row">
+                  <td class="text-white"><strong>Total</strong></td>
+                  <td><strong>{{ phaseTotal.planned | number }}</strong></td>
+                  <td><strong>{{ phaseTotal.deployed | number }}</strong></td>
+                  <td>
+                    <div class="progress-cell">
+                      <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" [style.width.%]="phaseTotal.completion" [style.background]="getProgressColor(phaseTotal.completion)"></div>
+                      </div>
+                      <span [style.color]="getProgressColor(phaseTotal.completion)"><strong>{{ phaseTotal.completion }}%</strong></span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Contractors Performance -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Contractors Performance</h3>
+            <button class="card-dl-btn no-export" title="Download as Excel" (click)="downloadTableXlsx('contractorsPerformance')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </button>
+          </div>
+          <div class="card-body table-scroll">
+            <div class="section-loader" *ngIf="isLoading && contractors.length === 0"><div class="spinner"></div></div>
+            <table class="data-table" *ngIf="contractors.length > 0">
+              <thead>
+                <tr>
+                  <th>Contractor</th>
+                  <th>Planned (km)</th>
+                  <th>Deployed (km)</th>
+                  <th>Completion</th>
+                  <th>Trend</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of contractors">
+                  <td class="text-white">{{ c.name }}</td>
+                  <td>{{ c.planned }}</td>
+                  <td>{{ c.deployed }}</td>
+                  <td>
+                    <div class="progress-cell">
+                      <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" [style.width.%]="c.completion" [style.background]="getProgressColor(c.completion)"></div>
+                      </div>
+                      <span [style.color]="getProgressColor(c.completion)">{{ c.completion }}%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" [attr.stroke]="getTrendColor(c.trend)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path [attr.d]="getTrendIcon(c.trend)"/>
+                    </svg>
+                  </td>
+                </tr>
+                <tr class="total-row">
+                  <td class="text-white"><strong>Total</strong></td>
+                  <td><strong>{{ contractorTotal.planned | number }}</strong></td>
+                  <td><strong>{{ contractorTotal.deployed | number }}</strong></td>
+                  <td>
+                    <div class="progress-cell">
+                      <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" [style.width.%]="contractorTotal.completion" [style.background]="getProgressColor(contractorTotal.completion)"></div>
+                      </div>
+                      <span [style.color]="getProgressColor(contractorTotal.completion)"><strong>{{ contractorTotal.completion }}%</strong></span>
+                    </div>
+                  </td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Daily Progress (stacked by phase, with total-progress line) -->
+        <div class="card" #cardDailyStacked>
+          <div class="card-header">
+            <h3>Daily Progress <span class="card-subtitle">(31 May)</span></h3>
+            <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Daily Progress (Stacked)'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardDailyStacked, 'Daily Progress (Stacked)')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </button>
+          </div>
+          <div class="card-body daily-progress-body">
+            <div class="section-loader" *ngIf="isLoading && dailyBars.length === 0" style="width:100%"><div class="spinner"></div></div>
+            <div class="daily-chart-area" *ngIf="dailyBars.length > 0">
+              <canvas #barChartCanvas class="chart-canvas"></canvas>
+            </div>
+            <div class="daily-info-box">
+              <div class="daily-info-item">
+                <span class="daily-info-dot" style="background: #3b82f6;"></span>
+                <span class="daily-info-label">Trenching</span>
+                <span class="daily-info-value">{{ dailyTrenching }} km</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><path d="M5 15l7-7 7 7"/></svg>
+              </div>
+              <div class="daily-info-item">
+                <span class="daily-info-dot" style="background: #f97316;"></span>
+                <span class="daily-info-label">Ducting</span>
+                <span class="daily-info-value">{{ dailyDucting }} km</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><path d="M5 15l7-7 7 7"/></svg>
+              </div>
+              <div class="daily-info-item">
+                <span class="daily-info-dot" style="background: #f59e0b;"></span>
+                <span class="daily-info-label">Backfilling</span>
+                <span class="daily-info-value">{{ dailyBackfilling }} km</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><path d="M5 15l7-7 7 7"/></svg>
+              </div>
+              <div class="daily-info-total">
+                <span class="daily-total-label">Total Progress</span>
+                <span class="daily-total-value">{{ dailyTotal }} km</span>
+              </div>
+              <div class="daily-info-compare">
+                <span>vs Yesterday</span>
+                <span class="daily-compare-value">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><path d="M5 15l7-7 7 7"/></svg>
+                  {{ dailyVsYesterday }}%
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item">
+              <span class="legend-square" style="background: #3b82f6;"></span>
+              <span>Trenching (km)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-square" style="background: #f97316;"></span>
+              <span>Ducting (km)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-square" style="background: #f59e0b;"></span>
+              <span>Backfilling (km)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-line" style="background: #94a3b8;"></span>
+              <span>Total Progress (km)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Budget Analysis -->
+  <div class="accordion-item" [class.open]="isPanelOpen('budget')">
+    <button class="accordion-header" (click)="toggleAccordion('budget')">
+      <span class="accordion-title">Budget Analysis</span>
+      <svg class="accordion-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="accordion-panel" *ngIf="isPanelOpen('budget')">
+
+      <!-- Budget Summary — /api/dashboard/financial-summary -->
+      <div class="dashboard-row">
+        <div class="card" #cardFinancialSummary>
+          <div class="card-header">
+            <h3>Budget Summary <span class="card-subtitle">(OMR)</span></h3>
+            <div class="card-header-actions">
+              <span class="header-badge" *ngIf="financialSummary">
+                {{ financialSummary.budgetUtilization | number:'1.0-2' }}% Utilized
+              </span>
+              <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Budget Summary'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardFinancialSummary, 'Budget Summary')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="section-loader" *ngIf="financialLoading && !financialSummary"><div class="spinner"></div></div>
+          <div class="fin-note fin-note--warn" *ngIf="financialError">{{ financialError }}</div>
+          <!-- The endpoint takes one id per field (Long upstream), so a
+               multi-select cannot be expressed. Say so rather than let the
+               figures look narrower than they are. -->
+          <div class="fin-note fin-note--warn" *ngIf="financialNarrowed.length">
+            Scoped to the first selected {{ financialNarrowed.join(', ') }} — this endpoint accepts one id per field.
+          </div>
+          <!-- Field dropped rather than sent: the DTO's id fields are `long`,
+               and a non-numeric id (a ring name, say) returns a 500. -->
+          <div class="fin-note fin-note--warn" *ngIf="financialInvalid.length">
+            {{ financialInvalid.join(', ') }} filter not applied — no numeric id available for it.
+          </div>
+
+          <ng-container *ngIf="financialSummary">
+            <div class="pr-stats">
+              <div class="pr-stat" *ngFor="let k of financialKpis" [title]="k.hint">
+                <span class="pr-stat-label">{{ k.label }}</span>
+                <span class="pr-stat-value" [style.color]="k.color">OMR {{ k.value | number:'1.0-0' }}</span>
+              </div>
+            </div>
+
+            <div class="fin-util">
+              <div class="fin-util-head">
+                <span class="fin-util-label">Budget Utilization</span>
+                <span class="fin-util-pct">{{ financialSummary.budgetUtilization | number:'1.0-2' }}%</span>
+              </div>
+              <div class="fin-util-track">
+                <div class="fin-util-fill"
+                     [style.width.%]="budgetUtilizationPct"
+                     [style.background]="financialSummary.budgetUtilization > 100 ? '#ef4444' : '#22c55e'"></div>
+              </div>
+              <div class="fin-util-foot">
+                <span>Executed OMR {{ financialSummary.executedCost | number:'1.0-0' }}</span>
+                <span>Planned OMR {{ financialSummary.plannedCost | number:'1.0-0' }}</span>
+              </div>
+            </div>
+
+            <div class="fin-counts">
+              <span class="fin-count" *ngFor="let c of financialCounts">
+                <strong>{{ c.value | number }}</strong> {{ c.label }}
+              </span>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <div class="dashboard-row two-col">
+
+        <div class="card" #cardInvoice>
+          <div class="card-header">
+            <h3>Invoice Summary</h3>
+            <div class="card-header-actions">
+              <span class="header-badge">{{ invoicePaidPct }}% Paid</span>
+              <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Invoice Summary'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardInvoice, 'Invoice Summary')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="card-body chart-container">
+            <div class="section-loader" *ngIf="financialLoading && !financialSummary"><div class="spinner"></div></div>
+            <canvas #invoiceCanvas class="chart-canvas"></canvas>
+          </div>
+          <div class="fin-note fin-note--warn" *ngIf="financialError">{{ financialError }}</div>
+          <div class="pr-stats">
+            <div class="pr-stat"><span class="pr-stat-label">{{ invoiceLabels.total }}</span><span class="pr-stat-value" style="color:#3b82f6">{{ invoiceStats.currency }} {{ invoiceStats.total | number:'1.0-0' }}</span></div>
+            <div class="pr-stat"><span class="pr-stat-label">{{ invoiceLabels.paid }}</span><span class="pr-stat-value" style="color:#22c55e">{{ invoiceStats.currency }} {{ invoiceStats.paid | number:'1.0-0' }}</span></div>
+            <div class="pr-stat"><span class="pr-stat-label">{{ invoiceLabels.remaining }}</span><span class="pr-stat-value" [style.color]="invoiceStats.remaining < 0 ? '#ef4444' : '#f59e0b'">{{ invoiceStats.currency }} {{ invoiceStats.remaining | number:'1.0-0' }}</span></div>
+          </div>
+        </div>
+
+      <!-- ===================================================================
+           PAC Status (Provisional Acceptance Certificate) — COMMENTED OUT.
+
+           Payment Status takes this slot instead, so the two cards driven by
+           /api/dashboard/financial-summary sit side by side. PAC Status is
+           real data (`pacItems`, from /api/dashboard/pac-status) and its
+           loader still runs — only the card is hidden. Uncomment to restore,
+           and move Payment Status back to a row of its own.
+      -->
+      <!--
+        <div class="card" #cardPac>
+          <div class="card-header">
+            <h3>PAC Status <span class="card-subtitle-light">(Provisional Acceptance Certificate)</span></h3>
+            <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'PAC Status'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardPac, 'PAC Status')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </button>
+          </div>
+          <div class="card-body pac-body">
+            <div class="section-loader" *ngIf="isLoading && pacItems.length === 0"><div class="spinner"></div></div>
+            <div class="pac-chart-wrap" *ngIf="pacItems.length > 0">
+              <svg viewBox="0 0 180 180" class="pac-donut">
+                <path *ngFor="let item of pacItems; let i = index"
+                  [attr.d]="getPacArc(i)"
+                  [attr.fill]="item.color"
+                  stroke="#111b2e"
+                  stroke-width="2"/>
+                <circle cx="90" cy="90" r="42" fill="#111b2e"/>
+                <text x="90" y="84" text-anchor="middle" fill="white" font-size="22" font-weight="700">{{ pacTotal }}</text>
+                <text x="90" y="102" text-anchor="middle" fill="#94a3b8" font-size="11">Total</text>
+              </svg>
+            </div>
+            <div class="pac-legend">
+              <div class="pac-legend-item" *ngFor="let item of pacItems">
+                <span class="pac-dot" [style.background]="item.color"></span>
+                <span class="pac-count" [style.color]="item.color">{{ item.count }}</span>
+                <span class="pac-label">{{ item.label }}</span>
+                <span class="pac-pct">({{ item.percentage }}%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      -->
+
+        <div class="card" #cardPaymentStatus>
+          <div class="card-header">
+            <h3>Payment Status <span class="card-subtitle">(OMR M)</span></h3>
+            <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Payment Status'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardPaymentStatus, 'Payment Status')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </button>
+          </div>
+          <div class="card-body chart-container">
+            <div class="section-loader" *ngIf="financialLoading && !financialSummary"><div class="spinner"></div></div>
+            <canvas #paymentStatusCanvas class="chart-canvas"></canvas>
+          </div>
+          <div class="fin-note fin-note--warn" *ngIf="financialError">{{ financialError }}</div>
+        </div>
+      </div>
+
+      <!-- Link-wise budget — one POST /api/dashboard/financial-summary per link
+           (the endpoint answers a single scope per call). -->
+      <div class="dashboard-row">
+        <div class="card" #cardLinkFinancial>
+          <div class="card-header">
+            <h3>Budget vs Executed by Link <span class="card-subtitle">(OMR M)</span></h3>
+            <div class="card-header-actions">
+              <label class="date-filter">
+                <span>From</span>
+                <input type="date" [(ngModel)]="linkFinFromDate" [max]="linkFinToDate || today" (ngModelChange)="onLinkFinDateChange()" />
+              </label>
+              <label class="date-filter">
+                <span>To</span>
+                <input type="date" [(ngModel)]="linkFinToDate" [min]="linkFinFromDate" [max]="today" (ngModelChange)="onLinkFinDateChange()" />
+              </label>
+              <button class="card-dl-btn no-export" [disabled]="linkFinLoading" title="Reload link figures" (click)="loadLinkFinancials()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7M21 3v6h-6"/></svg>
+              </button>
+              <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Budget by Link'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardLinkFinancial, 'Budget by Link')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="section-loader" *ngIf="linkFinLoading && linkFinancials.length === 0"><div class="spinner"></div></div>
+          <div class="fin-note fin-note--warn" *ngIf="linkFinError">{{ linkFinError }}</div>
+          <div class="fin-note fin-note--warn" *ngIf="linkFinDropped > 0">
+            Showing the first {{ linkFinancialMax }} links; {{ linkFinDropped }} more not requested.
+          </div>
+          <div class="fin-note fin-note--warn" *ngIf="linkFinUnusable > 0">
+            {{ linkFinUnusable }} link(s) skipped — no numeric id to query them with.
+          </div>
+
+          <div class="card-body chart-container">
+            <canvas #linkFinancialCanvas class="chart-canvas"></canvas>
+          </div>
+
+          <!-- The list doubles as the filter: each row ticks its own bar in the
+               chart above, and carries the figures the bars cannot label. -->
+          <div class="link-fin-list">
+            <div class="link-fin-head">
+              <span>Links ({{ linkFinancials.length }})</span>
+              <button class="link-fin-all" *ngIf="linkFinSelected.length" (click)="selectAllLinkFin()">Show all</button>
+            </div>
+            <div class="link-fin-row" *ngFor="let row of linkFinancials"
+                 [class.link-fin-row--off]="!isLinkFinSelected(row.id)"
+                 [class.link-fin-row--dead]="!row.summary"
+                 (click)="toggleLinkFin(row.id)">
+              <span class="link-fin-tick" [class.on]="isLinkFinSelected(row.id)"></span>
+              <span class="link-fin-name" [title]="row.name">{{ row.name }}</span>
+              <ng-container *ngIf="row.summary; else linkFinFailed">
+                <span class="link-fin-val" style="color:#8b5cf6">{{ row.summary.plannedCost | number:'1.0-0' }}</span>
+                <span class="link-fin-val" style="color:#06b6d4">{{ row.summary.executedCost | number:'1.0-0' }}</span>
+                <span class="link-fin-pct" [style.color]="row.summary.budgetUtilization > 100 ? '#ef4444' : '#22c55e'">
+                  {{ row.summary.budgetUtilization | number:'1.0-1' }}%
+                </span>
+              </ng-container>
+              <ng-template #linkFinFailed>
+                <span class="link-fin-dead">unavailable</span>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================
+           Monthly Invoicing Trend — COMMENTED OUT.
+
+           There is no source for it: /api/dashboard/financial-summary returns
+           one scoped row of totals, with no month-by-month series. The card
+           was rendering `invoiceMonthly`, six hardcoded months, right beside
+           real API figures — a reader could not tell which was which.
+           Uncomment once an endpoint returns an invoiced/paid time series.
+      -->
+      <!--
+        <div class="card" #cardInvoiceTrend>
+          <div class="card-header">
+            <h3>Monthly Invoicing Trend <span class="card-subtitle">(OMR M)</span></h3>
+            <div class="card-header-actions">
+              <label class="date-filter">
+                <span>From</span>
+                <input type="date" [(ngModel)]="invoiceFromDate" [max]="invoiceToDate || today" (ngModelChange)="onBudgetFilterChange()" />
+              </label>
+              <label class="date-filter">
+                <span>To</span>
+                <input type="date" [(ngModel)]="invoiceToDate" [min]="invoiceFromDate" [max]="today" (ngModelChange)="onBudgetFilterChange()" />
+              </label>
+              <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Monthly Invoicing Trend'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardInvoiceTrend, 'Monthly Invoicing Trend')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="card-body chart-container">
+            <canvas #invoiceTrendCanvas class="chart-canvas"></canvas>
+          </div>
+        </div>
+      -->
+
+
+      <!-- ===================================================================
+           Budget vs Spent by Contractor — COMMENTED OUT.
+
+           /api/dashboard/financial-summary answers for ONE scope at a time;
+           it returns no per-contractor array. The card was drawing
+           `budgetByContractor`, five hardcoded rows, so every bar was
+           invented. Uncomment when either an endpoint returns the split, or
+           we fan out one POST per contractor (the body accepts
+           {"contractor":"MHD"}) and build the series from the results.
+      -->
+      <!--
+      <div class="dashboard-row">
+        <div class="card" #cardBudgetContractor>
+          <div class="card-header">
+            <h3>Budget vs Spent by Contractor <span class="card-subtitle">(OMR M)</span></h3>
+            <div class="card-header-actions">
+              <select class="granularity-select" [(ngModel)]="budgetContractorFilter" (ngModelChange)="onBudgetFilterChange()">
+                <option value="all">All Contractors</option>
+                <option *ngFor="let c of budgetByContractor" [value]="c.name">{{ c.name }}</option>
+              </select>
+              <button class="card-dl-btn no-export" [class.loading]="exportingCard === 'Budget by Contractor'" [disabled]="!!exportingCard" title="Download as image" (click)="downloadCardImage(cardBudgetContractor, 'Budget by Contractor')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="card-body chart-container">
+            <canvas #budgetContractorCanvas class="chart-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+      -->
+    </div>
+  </div>
+
+  </div><!-- /accordion -->
+
+  <!-- Bottom Status Bar -->
+  <footer class="bottom-status-bar">
+    <div class="status-item" *ngFor="let item of statusBarItems">
+      <span class="status-dot" [style.background]="item.dotColor"></span>
+      <span class="status-label">{{ item.label }}</span>
+      <span class="status-value">{{ item.value }}</span>
+      <span class="status-badge-small" *ngIf="item.badge" [style.color]="item.badgeColor">{{ item.badge }}</span>
+    </div>
+    <div class="status-divider"></div>
+    <!-- <div class="status-item timestamp">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 6v6l4 2"/>
+      </svg>
+      <div class="timestamp-text">
+        <span class="status-label">{{ dataTimestamp }}</span>
+        <span class="status-timezone">{{ dataTimezone }}</span>
+      </div>
+    </div> -->
+  </footer>
+
+</div>

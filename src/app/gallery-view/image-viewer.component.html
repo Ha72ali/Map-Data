@@ -1,0 +1,92 @@
+<div class="viewer-backdrop" [class.detail-open]="detailOpen" (click)="onBackdropClick($event)">
+  <!-- Toolbar -->
+  <div class="viewer-toolbar">
+    <div class="viewer-caption">
+      <span class="viewer-label">{{ tile?.label }}</span>
+      <span class="viewer-sub" *ngIf="tile?.phaseName">{{ tile?.phaseName }}</span>
+      <span class="viewer-sub" *ngIf="tile?.routeName">· {{ tile?.routeName }}</span>
+    </div>
+
+    <div class="viewer-counter" *ngIf="total > 1">{{ index + 1 }} / {{ total }}</div>
+
+    <div class="viewer-actions">
+      <button type="button" class="viewer-btn" title="Zoom out (−)" aria-label="Zoom out"
+              (click)="zoomOut()" [disabled]="!canZoomOut">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+      <span class="viewer-zoom-level">{{ zoomPercent }}%</span>
+      <button type="button" class="viewer-btn" title="Zoom in (+)" aria-label="Zoom in"
+              (click)="zoomIn()" [disabled]="!canZoomIn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+      <button type="button" class="viewer-btn viewer-btn-text" title="Fit to window (0)" (click)="resetZoom()">Fit</button>
+      <button type="button" class="viewer-btn viewer-btn-text" title="Actual pixel size" (click)="actualSize()">1:1</button>
+
+      <div class="viewer-divider"></div>
+
+      <button type="button" class="viewer-btn viewer-btn-detail" [class.active]="detailOpen"
+              (click)="detailToggled.emit()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        Detail
+      </button>
+
+      <button type="button" class="viewer-btn" title="Close (Esc)" aria-label="Close viewer" (click)="close()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Image frame -->
+  <div
+    #frame
+    class="viewer-frame"
+    [class.pannable]="isPannable"
+    (wheel)="onWheel($event)"
+    (dblclick)="onDoubleClick($event)"
+    (pointerdown)="onPointerDown($event)"
+    (pointermove)="onPointerMove($event)"
+    (pointerup)="onPointerUp($event)"
+    (pointercancel)="onPointerUp($event)"
+  >
+    <img
+      #image
+      *ngIf="tile && !imageFailed"
+      class="viewer-image"
+      [src]="tile.url"
+      [alt]="tile.label"
+      [style.transform]="transform"
+      draggable="false"
+      (error)="onImageError()"
+    />
+    <div class="viewer-image-failed" *ngIf="imageFailed">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/>
+      </svg>
+      <span>This image could not be loaded.</span>
+    </div>
+  </div>
+
+  <!-- Navigation arrows -->
+  <button type="button" class="viewer-nav viewer-nav-prev" aria-label="Previous image"
+          *ngIf="total > 1" (click)="prev()" [disabled]="!hasPrev">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+  </button>
+  <button type="button" class="viewer-nav viewer-nav-next" aria-label="Next image"
+          *ngIf="total > 1" (click)="next()" [disabled]="!hasNext">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="9 6 15 12 9 18"/>
+    </svg>
+  </button>
+
+  <div class="viewer-hint">Scroll or double-click to zoom · drag to pan · ←/→ to browse</div>
+</div>

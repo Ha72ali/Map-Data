@@ -1,0 +1,116 @@
+:host {
+  display: block;
+  color: var(--text-primary);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  gap: 12px;
+}
+.page-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── Filter bar (horizontal, robust) ─────────────────────── */
+.filters {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 16px 16px 4px;
+  margin-bottom: 18px;
+  box-shadow: var(--card-shadow);
+}
+.filters .f-search {
+  flex: 1 1 260px;
+}
+.filters .f-select {
+  flex: 0 0 190px;
+}
+.filters .f-apply {
+  height: 40px;
+  border-radius: 10px;
+  margin-top: 4px;
+}
+
+/* ── Table card ──────────────────────────────────────────── */
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+.full-table {
+  width: 100%;
+  background: transparent;
+}
+.full-table th.mat-mdc-header-cell {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.full-table td.mat-mdc-cell,
+.full-table th.mat-mdc-header-cell {
+  padding: 14px 16px;
+  border-bottom-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+.full-table tr.mat-mdc-row:hover td {
+  background: var(--surface-2);
+}
+
+/* Status chips (theme-aware via the dashboard's status vars) */
+.active-chip {
+  --mdc-chip-elevated-container-color: var(--status-track-bg);
+  --mdc-chip-label-text-color: var(--status-track-text);
+  background: var(--status-track-bg) !important;
+  color: var(--status-track-text) !important;
+  font-weight: 700;
+}
+.inactive-chip {
+  --mdc-chip-elevated-container-color: var(--status-risk-bg);
+  --mdc-chip-label-text-color: var(--status-risk-text);
+  background: var(--status-risk-bg) !important;
+  color: var(--status-risk-text) !important;
+  font-weight: 700;
+}
+.active-chip .mdc-evolution-chip__text-label,
+.inactive-chip .mdc-evolution-chip__text-label {
+  color: inherit !important;
+}
+
+/* Action buttons */
+.full-table td.mat-mdc-cell .mat-mdc-icon-button {
+  width: 38px;
+  height: 38px;
+  color: var(--text-muted);
+}
+.full-table td.mat-mdc-cell .mat-mdc-icon-button:hover {
+  color: #2f7fd6;
+  background: rgba(47, 127, 214, 0.1);
+}
+
+.empty {
+  padding: 28px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.mat-mdc-paginator {
+  background: transparent;
+  border-top: 1px solid var(--border-subtle);
+}

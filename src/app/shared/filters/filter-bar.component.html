@@ -1,0 +1,205 @@
+<!-- Filter controls: reused inline on desktop and inside the modal on small screens -->
+<ng-template #filterControlsTpl>
+  <!-- Contractor -->
+  <div class="filter-group filter-group-ms">
+    <label>Contractor</label>
+    <!-- Locked when the deployment serves a single contractor. -->
+    <button type="button" class="filter-ms-trigger"
+            [disabled]="state.isSingleContractorDeployment"
+            [attr.aria-disabled]="state.isSingleContractorDeployment"
+            [title]="state.isSingleContractorDeployment ? 'Only one contractor in this deployment' : ''"
+            (click)="toggleDropdown('contractor', $event)">
+      <span>{{ state.selectedContractor }}</span>
+      <svg *ngIf="!state.isSingleContractorDeployment" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="ms-dropdown" *ngIf="state.openDropdown === 'contractor' && !state.isSingleContractorDeployment" (click)="$event.stopPropagation()">
+      <div class="ms-actions">
+        <button type="button" class="ms-action-btn" (click)="state.selectAll('contractor')">Select All</button>
+        <button type="button" class="ms-action-btn" (click)="state.clear('contractor')">Clear</button>
+      </div>
+      <label class="ms-option" *ngFor="let c of state.contractorOptions">
+        <input type="checkbox" [checked]="state.isSelected('contractor', c)" (change)="state.toggleSelection('contractor', c)" />
+        <span>{{ c }}</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Ring -->
+  <div class="filter-group filter-group-ms">
+    <label>Ring</label>
+    <button type="button" class="filter-ms-trigger" (click)="toggleDropdown('ring', $event)">
+      <span>{{ state.selectedRing }}</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="ms-dropdown" *ngIf="state.openDropdown === 'ring'" (click)="$event.stopPropagation()">
+      <div class="ms-actions">
+        <button type="button" class="ms-action-btn" (click)="state.selectAll('ring')">Select All</button>
+        <button type="button" class="ms-action-btn" (click)="state.clear('ring')">Clear</button>
+      </div>
+      <label class="ms-option" *ngFor="let r of state.ringOptions">
+        <input type="checkbox" [checked]="state.isSelected('ring', r)" (change)="state.toggleSelection('ring', r)" />
+        <span>{{ r }}</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Project -->
+  <div class="filter-group filter-group-ms">
+    <label>Project</label>
+    <button type="button" class="filter-ms-trigger" (click)="toggleDropdown('project', $event)">
+      <span>{{ state.selectedProject }}</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="ms-dropdown" *ngIf="state.openDropdown === 'project'" (click)="$event.stopPropagation()">
+      <div class="ms-actions">
+        <button type="button" class="ms-action-btn" (click)="state.selectAll('project')">Select All</button>
+        <button type="button" class="ms-action-btn" (click)="state.clear('project')">Clear</button>
+      </div>
+      <label class="ms-option" *ngFor="let p of state.projectOptions">
+        <input type="checkbox" [checked]="state.isSelected('project', p)" (change)="state.toggleSelection('project', p)" />
+        <span>{{ p }}</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Phase -->
+  <div class="filter-group filter-group-ms">
+    <label>Phase</label>
+    <button type="button" class="filter-ms-trigger" (click)="toggleDropdown('phase', $event)">
+      <span>{{ state.selectedPhase }}</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="ms-dropdown" *ngIf="state.openDropdown === 'phase'" (click)="$event.stopPropagation()">
+      <div class="ms-actions">
+        <button type="button" class="ms-action-btn" (click)="state.selectAll('phase')">Select All</button>
+        <button type="button" class="ms-action-btn" (click)="state.clear('phase')">Clear</button>
+      </div>
+      <label class="ms-option" *ngFor="let ph of state.phaseOptions">
+        <input type="checkbox" [checked]="state.isSelected('phase', ph)" (change)="state.toggleSelection('phase', ph)" />
+        <span>{{ ph }}</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Trenching Type (only shown when loaded segments have trenching types) -->
+  <div class="filter-group filter-group-ms" *ngIf="state.trenchingOptions.length">
+    <label>Trenching Type</label>
+    <button type="button" class="filter-ms-trigger" (click)="toggleDropdown('trenching', $event)">
+      <span>{{ state.selectedTrenching }}</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="ms-dropdown" *ngIf="state.openDropdown === 'trenching'" (click)="$event.stopPropagation()">
+      <div class="ms-actions">
+        <button type="button" class="ms-action-btn" (click)="state.selectAll('trenching')">Select All</button>
+        <button type="button" class="ms-action-btn" (click)="state.clear('trenching')">Clear</button>
+      </div>
+      <label class="ms-option" *ngFor="let tt of state.trenchingOptions">
+        <input type="checkbox" [checked]="state.isSelected('trenching', tt)" (change)="state.toggleSelection('trenching', tt)" />
+        <span>{{ tt }}</span>
+      </label>
+    </div>
+  </div>
+</ng-template>
+
+<ng-container *ngIf="layout === 'drawer'; else inlineLayout">
+  <!-- Round "Filters" FAB; the count badge keeps a narrowed view from being a
+       silent state. -->
+  <button
+    type="button"
+    class="filter-fab"
+    [class.open]="drawerOpen"
+    (click)="toggleDrawer($event)"
+    aria-label="Filters"
+    [attr.title]="drawerOpen ? 'Close filters' : 'Filters'"
+  >
+    <svg *ngIf="!drawerOpen" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+    </svg>
+    <svg *ngIf="drawerOpen" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+    <span class="filter-fab-badge" *ngIf="state.activeFilterCount > 0 && !drawerOpen">{{ state.activeFilterCount }}</span>
+  </button>
+
+  <div class="filter-drawer-backdrop" *ngIf="drawerOpen" (click)="closeDrawer()"></div>
+
+  <aside class="filter-drawer" *ngIf="drawerOpen" aria-label="Filters">
+    <div class="filter-drawer-header">
+      <div class="filter-drawer-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        Filters
+        <span class="filter-badge" *ngIf="state.activeFilterCount > 0">{{ state.activeFilterCount }}</span>
+      </div>
+      <button type="button" class="filter-drawer-close" (click)="closeDrawer()" aria-label="Close filters">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="filter-drawer-body">
+      <ng-container *ngTemplateOutlet="filterControlsTpl"></ng-container>
+    </div>
+
+    <div class="filter-drawer-footer">
+      <button type="button" class="filter-drawer-reset" (click)="clearAll()">Clear all</button>
+      <button type="button" class="filter-apply-btn" (click)="emitApply()" [disabled]="applying">
+        <span class="filter-apply-spinner" *ngIf="applying"></span>
+        <span>{{ applying ? 'Applying…' : 'Apply' }}</span>
+      </button>
+    </div>
+  </aside>
+</ng-container>
+
+<ng-template #inlineLayout>
+<!-- Inline filters (hidden < 1125px) -->
+<div class="filter-bar">
+  <ng-container *ngTemplateOutlet="filterControlsTpl"></ng-container>
+
+  <div class="filter-group filter-apply-group">
+    <label>&nbsp;</label>
+    <button type="button" class="filter-apply-btn" (click)="emitApply()" [disabled]="applying">
+      <span class="filter-apply-spinner" *ngIf="applying"></span>
+      <span>{{ applying ? 'Applying…' : 'Apply' }}</span>
+    </button>
+  </div>
+
+  <!-- Host-supplied extras (e.g. the GIS view's Export KMZ menu) -->
+  <ng-content></ng-content>
+</div>
+
+<!-- Compact "Filters" trigger (shown < 1125px) -->
+<button type="button" class="mobile-filter-btn" (click)="openMobileFilterModal()">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+  </svg>
+  Filters
+  <span class="filter-badge" *ngIf="state.activeFilterCount > 0">{{ state.activeFilterCount }}</span>
+</button>
+
+<!-- Mobile Filter Modal (shown < 1125px, hidden by default) -->
+<div class="mobile-filter-backdrop" *ngIf="mobileFilterOpen" (click)="cancelMobileFilterModal()"></div>
+<div class="mobile-filter-modal" *ngIf="mobileFilterOpen">
+  <div class="mobile-filter-header">
+    <div class="mobile-filter-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </svg>
+      Filters
+    </div>
+    <button type="button" class="mobile-filter-close" (click)="cancelMobileFilterModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="mobile-filter-body">
+    <ng-container *ngTemplateOutlet="filterControlsTpl"></ng-container>
+  </div>
+  <div class="mobile-filter-footer">
+    <button type="button" class="mobile-filter-cancel" (click)="cancelMobileFilterModal()">Cancel</button>
+    <button type="button" class="mobile-filter-apply" (click)="emitApply()" [disabled]="applying">
+      <span class="filter-apply-spinner" *ngIf="applying"></span>
+      <span>{{ applying ? 'Applying…' : 'Apply' }}</span>
+    </button>
+  </div>
+</div>
+</ng-template>

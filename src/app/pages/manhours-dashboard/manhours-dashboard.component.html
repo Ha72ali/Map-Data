@@ -1,0 +1,220 @@
+<div class="mh-dashboard">
+  <!-- Tooltip -->
+  <div class="mh-tooltip" *ngIf="tooltip.visible" [style.left.px]="tooltip.x + 12" [style.top.px]="tooltip.y - 10">
+    <div class="mh-tooltip-title">{{ tooltip.title }}</div>
+    <div *ngFor="let line of tooltip.lines" class="mh-tooltip-line">{{ line }}</div>
+  </div>
+
+  <!-- Header -->
+  <div class="mh-header">
+    <div>
+      <h1 class="mh-title">Man-Hours Monitoring</h1>
+      <p class="mh-subtitle">Track labor budgets, utilization, and efficiency across landscaping projects.</p>
+    </div>
+    <div class="mh-filters">
+      <select class="mh-select" [value]="selectedProject" (change)="onProjectChange($any($event.target).value)">
+        <option>All</option>
+        <option *ngFor="let p of allProjects">{{ p.name }}</option>
+      </select>
+      <select class="mh-select" [value]="selectedPeriod" (change)="onPeriodChange($any($event.target).value)">
+        <option>Weekly</option><option>Monthly</option><option>Quarterly</option><option>Half Yearly</option><option>Yearly</option>
+      </select>
+      <select class="mh-select" [value]="selectedCategory" (change)="onCategoryChange($any($event.target).value)">
+        <option>All</option><option>Softscape</option><option>Hardscape</option><option>Irrigation</option><option>Maintenance</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- KPI Cards Row -->
+  <div class="mh-kpi-row">
+    <div *ngFor="let card of kpiCards" class="mh-kpi-card"
+         (mouseenter)="showTooltip($event, card.title, [card.value + ' ' + card.unit, card.change > 0 ? (card.direction === 'up' ? '+' : '-') + card.change + '% vs last period' : 'Budget baseline'])"
+         (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+      <div class="mh-kpi-icon" [ngClass]="'mh-kpi-icon-' + card.color">
+        <svg *ngIf="card.icon === 'clock'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <svg *ngIf="card.icon === 'check'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <svg *ngIf="card.icon === 'pause'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        <svg *ngIf="card.icon === 'zap'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="mh-kpi-info">
+        <span class="mh-kpi-label">{{ card.title }}</span>
+        <span class="mh-kpi-value">{{ card.value }}<small>{{ card.unit }}</small></span>
+      </div>
+      <span *ngIf="card.change > 0" class="mh-kpi-change" [ngClass]="card.direction === 'up' && card.color === 'red' ? 'change-bad' : card.direction === 'up' ? 'change-good' : 'change-good'">
+        {{ card.direction === 'up' ? '+' : '-' }}{{ card.change }}%
+      </span>
+    </div>
+  </div>
+
+  <!-- Cost KPIs -->
+  <div class="mh-cost-row">
+    <div *ngFor="let c of costCards" class="mh-cost-card"
+         (mouseenter)="showTooltip($event, c.title, [c.value, c.change > 0 ? (c.direction === 'up' ? '+' : '-') + c.change + '%' : 'Baseline'])"
+         (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+      <div class="mh-cost-dot" [style.backgroundColor]="c.color"></div>
+      <div class="mh-cost-info">
+        <span class="mh-cost-label">{{ c.title }}</span>
+        <span class="mh-cost-value">{{ c.value }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row: Burn Rate + Category Distribution -->
+  <div class="mh-charts-row">
+    <!-- Weekly Burn Rate Chart -->
+    <div class="mh-card mh-burn-card">
+      <h3 class="mh-card-title">Weekly Burn Rate</h3>
+      <div class="mh-burn-legend">
+        <span class="mh-legend-item"><span class="mh-legend-line" style="background:#3b82f6"></span> Planned</span>
+        <span class="mh-legend-item"><span class="mh-legend-line" style="background:#22c55e"></span> Actual</span>
+        <span class="mh-legend-item"><span class="mh-legend-line mh-legend-dashed" style="background:#ef4444"></span> Idle</span>
+      </div>
+      <div class="mh-burn-chart">
+        <div class="mh-burn-y">
+          <span *ngFor="let l of getBurnYLabels()">{{ l }}</span>
+        </div>
+        <div class="mh-burn-area">
+          <svg viewBox="0 0 500 200" preserveAspectRatio="none" class="mh-burn-svg">
+            <line x1="0" y1="0" x2="500" y2="0" stroke="var(--border)" stroke-width="0.5" opacity="0.2"/>
+            <line x1="0" y1="66" x2="500" y2="66" stroke="var(--border)" stroke-width="0.5" opacity="0.2"/>
+            <line x1="0" y1="133" x2="500" y2="133" stroke="var(--border)" stroke-width="0.5" opacity="0.2"/>
+            <line x1="0" y1="200" x2="500" y2="200" stroke="var(--border)" stroke-width="0.5" opacity="0.2"/>
+            <path [attr.d]="burnActualArea" fill="#22c55e" opacity="0.1"/>
+            <path [attr.d]="burnPlannedPath" fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+            <path [attr.d]="burnActualPath" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+            <path [attr.d]="burnIdlePath" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5,4"/>
+          </svg>
+        </div>
+      </div>
+      <div class="mh-burn-x">
+        <span *ngFor="let d of burnRateData">{{ d.week }}</span>
+      </div>
+    </div>
+
+    <!-- Labor Category Distribution -->
+    <div class="mh-card">
+      <h3 class="mh-card-title">Labor Category Distribution</h3>
+      <div class="mh-cat-content">
+        <div class="mh-cat-pie-wrap">
+          <svg viewBox="0 0 180 180" class="mh-cat-pie">
+            <circle cx="90" cy="90" r="70" fill="none" stroke="var(--surface-3, #e5e7eb)" stroke-width="28"/>
+            <circle *ngFor="let seg of categoryPieSegments" cx="90" cy="90" r="70" fill="none"
+                    [attr.stroke]="seg.color" stroke-width="28"
+                    [attr.stroke-dasharray]="seg.dashArray" [attr.stroke-dashoffset]="seg.dashOffset"
+                    transform="rotate(-90 90 90)"/>
+            <text x="90" y="86" text-anchor="middle" fill="var(--text-primary)" font-size="16" font-weight="700">32,180</text>
+            <text x="90" y="102" text-anchor="middle" fill="var(--text-tertiary)" font-size="9">total hrs</text>
+          </svg>
+        </div>
+        <div class="mh-cat-legend">
+          <div *ngFor="let cat of laborCategories" class="mh-cat-item"
+               (mouseenter)="showTooltip($event, cat.name, [cat.hours.toLocaleString() + ' hours', cat.percent + '% of total'])"
+               (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+            <span class="legend-dot" [style.backgroundColor]="cat.color"></span>
+            <span class="mh-cat-name">{{ cat.name }}</span>
+            <span class="mh-cat-hours">{{ cat.hours.toLocaleString() }} hrs</span>
+            <span class="mh-cat-pct">{{ cat.percent }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Idle Hours Analysis + Handover Delay -->
+  <div class="mh-analysis-row">
+    <!-- Idle Hours by Reason -->
+    <div class="mh-card">
+      <h3 class="mh-card-title">Idle Hours Breakdown</h3>
+      <div class="mh-idle-list">
+        <div *ngFor="let r of idleReasons" class="mh-idle-item"
+             (mouseenter)="showTooltip($event, r.reason, [r.hours.toLocaleString() + ' hours', r.percent + '% of idle time'])"
+             (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+          <div class="mh-idle-info">
+            <span class="mh-idle-reason">{{ r.reason }}</span>
+            <span class="mh-idle-hours">{{ r.hours.toLocaleString() }} hrs ({{ r.percent }}%)</span>
+          </div>
+          <div class="mh-idle-bar-track">
+            <div class="mh-idle-bar-fill" [style.width.%]="r.percent" [style.backgroundColor]="r.color"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Site Handover Delay Tracker -->
+    <div class="mh-card">
+      <h3 class="mh-card-title">Site Handover Delay Tracker</h3>
+      <div class="mh-delay-table-wrap">
+        <table class="mh-delay-table">
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Planned</th>
+              <th>Actual</th>
+              <th>Delay</th>
+              <th>Idle Cost</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of handoverDelays">
+              <td class="mh-td-project">{{ d.project }}</td>
+              <td>{{ d.plannedDate }}</td>
+              <td>{{ d.actualDate }}</td>
+              <td class="mh-td-delay">{{ d.delayDays }} days</td>
+              <td class="mh-td-cost">{{ d.idleHoursCost }}</td>
+              <td><span class="mh-delay-badge" [ngClass]="d.status === 'Pending' ? 'badge-pending' : 'badge-done'">{{ d.status }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project-wise Breakdown Table -->
+  <div class="mh-card mh-full-card">
+    <h3 class="mh-card-title">Project-wise Man-Hours Breakdown</h3>
+    <div class="mh-table-wrap">
+      <table class="mh-table">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Zone</th>
+            <th>Category</th>
+            <th>Budgeted Hrs</th>
+            <th>Utilized Hrs</th>
+            <th>Idle Hrs</th>
+            <th>Efficiency</th>
+            <th>Budget Cost</th>
+            <th>Actual Cost</th>
+            <th>Variance</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of filteredProjects"
+              (mouseenter)="showTooltip($event, p.name, ['Zone: ' + p.zone, 'Budgeted: ' + p.budgeted.toLocaleString() + ' hrs', 'Utilized: ' + p.utilized.toLocaleString() + ' hrs', 'Idle: ' + p.idle.toLocaleString() + ' hrs', 'Efficiency: ' + p.efficiency + '%'])"
+              (mousemove)="moveTooltip($event)" (mouseleave)="hideTooltip()">
+            <td class="mh-td-project">{{ p.name }}</td>
+            <td>{{ p.zone }}</td>
+            <td>{{ p.category }}</td>
+            <td>{{ p.budgeted.toLocaleString() }}</td>
+            <td>{{ p.utilized.toLocaleString() }}</td>
+            <td class="mh-td-idle">{{ p.idle.toLocaleString() }}</td>
+            <td>
+              <div class="mh-eff-wrap">
+                <div class="mh-eff-bar"><div class="mh-eff-fill" [ngClass]="getEfficiencyClass(p.efficiency)" [style.width.%]="p.efficiency"></div></div>
+                <span class="mh-eff-val" [ngClass]="getEfficiencyClass(p.efficiency)">{{ p.efficiency }}%</span>
+              </div>
+            </td>
+            <td>${{ (p.costBudget / 1000).toFixed(0) }}K</td>
+            <td>${{ (p.costActual / 1000).toFixed(0) }}K</td>
+            <td [class.mh-td-positive]="p.costActual <= p.costBudget" [class.mh-td-negative]="p.costActual > p.costBudget">
+              {{ p.costActual <= p.costBudget ? '-' : '+' }}${{ (Math.abs(p.costBudget - p.costActual) / 1000).toFixed(0) }}K
+            </td>
+            <td><span class="mh-status-badge" [ngClass]="getStatusClass(p.status)">{{ p.status }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

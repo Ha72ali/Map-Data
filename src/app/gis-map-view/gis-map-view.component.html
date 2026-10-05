@@ -1,0 +1,384 @@
+<div class="gis-map-page">
+  <!-- Export KMZ options. Opened from the breadcrumb bar's export button, so
+       it hangs just under that bar's right edge. -->
+  <div class="export-menu export-menu-topbar" *ngIf="showExportMenu" (click)="$event.stopPropagation()">
+    <div class="export-menu-title">Export KMZ</div>
+    <label class="export-check">
+      <input type="checkbox" [(ngModel)]="exportIncludeMarkers" />
+      <span>Include Markers</span>
+    </label>
+    <div class="export-divider"></div>
+    <label class="export-radio">
+      <input type="radio" name="exportStatus" [value]="null" [(ngModel)]="exportStatusFilter" />
+      <span>All (Default)</span>
+    </label>
+    <label class="export-radio">
+      <input type="radio" name="exportStatus" value="APPROVED" [(ngModel)]="exportStatusFilter" />
+      <span>Approved Only</span>
+    </label>
+    <label class="export-radio">
+      <input type="radio" name="exportStatus" value="IN_PROGRESS" [(ngModel)]="exportStatusFilter" />
+      <span>In Progress Only</span>
+    </label>
+    <div class="export-divider"></div>
+    <button type="button" class="export-item" (click)="handleExport('merged')">⚡ Download Optimized (Web)</button>
+    <button type="button" class="export-item" (click)="handleExport('detailed')">⚠ Download Detailed (Desktop)</button>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-row">
+    <div class="kpi-card" *ngFor="let kpi of kpiCards">
+      <div class="kpi-label">{{ kpi.label }}</div>
+      <div class="kpi-value-row">
+        <span class="kpi-value" [style.color]="kpi.color">{{ kpi.value }}</span>
+        <span class="kpi-unit">{{ kpi.unit }}</span>
+        <!-- On the count's row, pushed right, so the card needs no third line. -->
+        <span class="kpi-percentage" *ngIf="kpi.percentage">{{ kpi.percentage }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map Area -->
+  <div class="map-container" #mapContainer [class.map-fullscreen]="isFullscreen">
+    <!-- Filters: a FAB in the map's free top-right corner (the zoom controls
+         own the left) opening a right-edge drawer. Inside the map container,
+         so it stays usable in fullscreen too. -->
+    <app-filter-bar layout="drawer" [state]="filters" [applying]="applyingFilters" (apply)="applyFilters()"></app-filter-bar>
+
+    <!-- Map Controls (left side) -->
+    <div class="map-controls">
+      <button class="map-control-btn" title="Zoom In" aria-label="Zoom in"
+              (click)="zoomIn()" [disabled]="!canZoomIn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+      <button class="map-control-btn" title="Zoom Out" aria-label="Zoom out"
+              (click)="zoomOut()" [disabled]="!canZoomOut">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+      <div class="map-control-divider"></div>
+      <button class="map-control-btn" [title]="showMarkers ? 'Hide Markers' : 'Show Markers'"
+              [attr.aria-label]="showMarkers ? 'Hide markers' : 'Show markers'"
+              [attr.aria-pressed]="showMarkers" [class.active]="showMarkers"
+              (click)="toggleMarkers()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+      </button>
+      <div class="map-layers-wrap">
+        <button class="map-control-btn" title="Layers" aria-label="Basemap layers"
+                [class.active]="basemapMenuOpen" [attr.aria-expanded]="basemapMenuOpen"
+                (click)="toggleBasemapMenu($event)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </button>
+        <div class="map-layers-menu" *ngIf="basemapMenuOpen" role="menu" (click)="$event.stopPropagation()">
+          <div class="map-layers-menu-title">Basemap</div>
+          <button type="button" class="map-layers-option" role="menuitemradio"
+                  *ngFor="let opt of basemapOptions"
+                  [class.active]="mapBasemapStyle === opt.id"
+                  [attr.aria-checked]="mapBasemapStyle === opt.id"
+                  (click)="selectBasemap(opt.id, $event)">
+            <span class="map-layers-option-label">{{ opt.label }}</span>
+            <span class="map-layers-option-hint">{{ opt.hint }}</span>
+          </button>
+        </div>
+      </div>
+      <button class="map-control-btn" [title]="locating ? 'Locating…' : 'My Location'"
+              aria-label="Go to my location" [class.active]="locating" [disabled]="locating"
+              (click)="goToMyLocation()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <line x1="12" y1="1" x2="12" y2="4"></line>
+          <line x1="12" y1="20" x2="12" y2="23"></line>
+          <line x1="1" y1="12" x2="4" y2="12"></line>
+          <line x1="20" y1="12" x2="23" y2="12"></line>
+        </svg>
+      </button>
+      <button class="map-control-btn" [title]="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'"
+              [attr.aria-label]="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
+              [attr.aria-pressed]="isFullscreen" [class.active]="isFullscreen"
+              (click)="toggleFullscreen()">
+        <svg *ngIf="!isFullscreen" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <polyline points="9 21 3 21 3 15"></polyline>
+          <line x1="21" y1="3" x2="14" y2="10"></line>
+          <line x1="3" y1="21" x2="10" y2="14"></line>
+        </svg>
+        <svg *ngIf="isFullscreen" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="14 10 20 10 20 4"></polyline>
+          <polyline points="10 14 4 14 4 20"></polyline>
+          <line x1="21" y1="3" x2="14" y2="10"></line>
+          <line x1="3" y1="21" x2="10" y2="14"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Marker search (ArcGIS Search widget, stock Esri magnifier icon) -->
+    <div #mapSearchHost class="map-search-host"></div>
+
+    <!-- ArcGIS Map -->
+    <div #mapHost class="map-view-host"></div>
+
+    <!-- Loading overlay -->
+    <div class="map-loading-overlay" *ngIf="mapLoading">
+      <div class="map-loading-spinner"></div>
+      <span>Loading map data...</span>
+    </div>
+
+    <!-- Error overlay -->
+    <div class="map-error-overlay" *ngIf="mapError && !mapLoading">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+      <span>{{ mapError }}</span>
+    </div>
+
+    <!-- Segment hint: shown only when the chosen phases have no geometry -->
+    <div class="map-segment-hint" *ngIf="!filters.isSinglePhaseSelected && !mapLoading && !mapError">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      <span *ngIf="!filters.selectedPhaseUnavailable">Select a phase to load segment details</span>
+      <span *ngIf="filters.selectedPhaseUnavailable">
+        No segment data for the selected phase(s). Available: {{ filters.availablePhaseNames.join(', ') || 'none' }}
+      </span>
+    </div>
+
+    <!-- Transient map notice (geolocation / fullscreen failures) -->
+    <div class="map-toast" *ngIf="mapToast" role="status">{{ mapToast }}</div>
+
+    <!-- Network Status Legend -->
+    <div class="map-legend">
+      <span class="legend-title">Network Status</span>
+      <div class="legend-items">
+        <div class="legend-item" *ngFor="let item of legendItems">
+          <span
+            class="legend-line"
+            [style.background-color]="item.dashed ? 'transparent' : item.color"
+            [style.border-bottom]="item.dashed ? '2px dashed ' + item.color : 'none'"
+          ></span>
+          <span class="legend-label">{{ item.label }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Status Bar -->
+  <div class="bottom-status-bar">
+    <div class="status-item" *ngFor="let item of bottomStatus">
+      <span class="status-label">{{ item.label }}</span>
+      <span class="status-value">{{ item.value }}</span>
+      <span class="status-sub" *ngIf="item.sub">{{ item.sub }}</span>
+    </div>
+  </div>
+
+  <!-- Full-screen photo viewer with zoom / pan (shared with the Gallery).
+       Its "Detail" button just closes it, which reveals the Link Details
+       panel again — the panel is this screen's detail view. -->
+  <app-image-viewer
+    *ngIf="viewerOpen"
+    [tiles]="photoTiles"
+    [index]="viewerIndex"
+    [detailOpen]="false"
+    (indexChange)="viewerIndex = $event"
+    (closed)="closePhotoViewer()"
+    (detailToggled)="closePhotoViewer()"
+  ></app-image-viewer>
+
+  <!-- Right Slide-Out Panel: Link Details -->
+  <div class="details-panel-overlay" *ngIf="detailsPanelOpen" (click)="closeDetailsPanel()"></div>
+  <div class="details-panel" [class.open]="detailsPanelOpen && !viewerOpen">
+    <!-- Panel Header -->
+    <div class="panel-header">
+      <button class="panel-back-btn" (click)="closeDetailsPanel()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <span class="panel-title">Link Details</span>
+      <button class="panel-close-btn" (click)="closeDetailsPanel()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Link Info -->
+    <div class="panel-body">
+      <div class="link-info-header">
+        <span class="status-badge in-progress">{{ selectedLink.status }}</span>
+        <h3 class="link-name">{{ selectedLink.linkName }}</h3>
+        <p class="link-ring">{{ selectedLink.ring }}</p>
+      </div>
+
+      <!-- Navigation Arrows -->
+      <div class="link-nav">
+        <button class="nav-arrow" (click)="prevLink()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button class="nav-arrow" (click)="nextLink()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 6 15 12 9 18"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Construction Photo — only shown when images exist -->
+      <button type="button" class="construction-photo" *ngIf="photos.length > 0"
+              title="Open photo viewer" (click)="openPhotoViewer(0)">
+        <img [src]="photos[0]" alt="Construction site photo" class="construction-photo-img" />
+        <span class="photo-zoom-badge" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/>
+            <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+        </span>
+      </button>
+
+      <!-- Link Details Grid -->
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">Phase</span>
+          <span class="detail-value">{{ selectedLink.phase }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Work Type</span>
+          <span class="detail-value">{{ selectedLink.workType }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Contractor</span>
+          <span class="detail-value">{{ selectedLink.contractor }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Planned Length</span>
+          <span class="detail-value">{{ selectedLink.plannedLength }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Deployed Length</span>
+          <span class="detail-value">{{ selectedLink.deployedLength }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Progress</span>
+          <div class="progress-container">
+            <span class="progress-text">{{ selectedLink.progress }}%</span>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" [style.width.%]="selectedLink.progress"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="panel-tabs">
+        <button
+          *ngFor="let tab of tabs"
+          class="panel-tab"
+          [class.active]="selectedTab === tab"
+          (click)="selectTab(tab)"
+        >
+          {{ getTabLabel(tab) }}
+        </button>
+      </div>
+
+      <!-- Tab Content: Photos — only if photos exist -->
+      <div class="tab-content" *ngIf="selectedTab === 'Photos' && photos.length > 0">
+        <!-- Segment Info -->
+        <div class="segment-info">
+          <span class="segment-range">{{ segment.range }}</span>
+          <span class="segment-type-badge">{{ segment.type }}</span>
+        </div>
+
+        <!-- Photo Gallery -->
+        <div class="photo-gallery">
+          <button type="button" class="gallery-main" title="Open photo viewer"
+                  (click)="openPhotoViewer(currentPhotoIndex - 1)">
+            <img [src]="photos[currentPhotoIndex - 1]" alt="Photo {{ currentPhotoIndex }}" class="gallery-photo-img" />
+            <div class="gallery-counter">{{ currentPhotoIndex }}/{{ photosCount }}</div>
+            <span class="photo-zoom-badge" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/>
+                <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+              </svg>
+            </span>
+          </button>
+          <div class="gallery-thumbnails">
+            <div
+              class="thumbnail"
+              *ngFor="let photo of photos; let i = index"
+              [class.active]="currentPhotoIndex === i + 1"
+              title="Click to select · double-click to open the viewer"
+              (click)="currentPhotoIndex = i + 1"
+              (dblclick)="openPhotoViewer(i)"
+            >
+              <img [src]="photo" alt="Thumbnail {{ i + 1 }}" class="thumbnail-img" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Segment Details -->
+        <div class="segment-details">
+          <h4>Segment Details</h4>
+          <div class="segment-detail-grid">
+            <div class="segment-detail-item">
+              <span class="segment-detail-label">Start Point</span>
+              <span class="segment-detail-value">{{ segment.startPoint }}</span>
+            </div>
+            <div class="segment-detail-item">
+              <span class="segment-detail-label">End Point</span>
+              <span class="segment-detail-value">{{ segment.endPoint }}</span>
+            </div>
+            <div class="segment-detail-item">
+              <span class="segment-detail-label">Length</span>
+              <span class="segment-detail-value">{{ segment.length }}</span>
+            </div>
+            <div class="segment-detail-item">
+              <span class="segment-detail-label">Captured On</span>
+              <span class="segment-detail-value">{{ segment.capturedOn }}</span>
+            </div>
+            <div class="segment-detail-item">
+              <span class="segment-detail-label">Taken By</span>
+              <span class="segment-detail-value">{{ segment.takenBy }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Photos — no photos available -->
+      <div class="tab-content" *ngIf="selectedTab === 'Photos' && photos.length === 0">
+        <p class="tab-placeholder-text">No photos available for this link.</p>
+      </div>
+
+      <!-- Tab Content: Overview -->
+      <div class="tab-content" *ngIf="selectedTab === 'Overview'">
+        <dl class="overview-list" *ngIf="overviewRows.length; else noOverview">
+          <div class="overview-row" *ngFor="let row of overviewRows">
+            <dt class="overview-label">{{ row.label }}</dt>
+            <dd class="overview-value">{{ row.value }}</dd>
+          </div>
+        </dl>
+        <ng-template #noOverview>
+          <p class="tab-placeholder-text">No overview data for this segment.</p>
+        </ng-template>
+      </div>
+
+      <!-- View Link Profile Button -->
+      <button class="view-link-profile-btn" (click)="viewLinkProfile()">View Link Profile</button>
+    </div>
+  </div>
+</div>

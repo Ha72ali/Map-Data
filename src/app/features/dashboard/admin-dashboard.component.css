@@ -1,0 +1,93 @@
+.page-title {
+  margin: 0 0 20px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.stat mat-icon {
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px;
+  height: 44px;
+  width: 44px;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 13px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.empty {
+  opacity: 0.6;
+  padding: 12px;
+}
+
+.welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+}
+.welcome-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.welcome-body mat-icon {
+  font-size: 34px;
+  height: 34px;
+  width: 34px;
+  color: #e67e22;
+}
+.welcome-hi {
+  font-size: 20px;
+  font-weight: 700;
+}
+.welcome-sub {
+  font-size: 13px;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+.welcome-completion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+}
+.welcome-completion span {
+  font-size: 13px;
+  opacity: 0.8;
+}

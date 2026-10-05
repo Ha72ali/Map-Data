@@ -1,0 +1,28 @@
+/* Applied to cloned nodes during html2canvas capture (light PDF pages). */
+.report-export-capture-root {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  padding: 12px !important;
+  border-radius: 8px;
+}
+
+.report-export-capture-root .rcc-col,
+.report-export-capture-root .exec-monitor-panel,
+.report-export-capture-root .rollout-command-center {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+.report-export-capture-root .rcc-col-title,
+.report-export-capture-root .ops-section-title,
+.report-export-capture-root .rcc-co-name,
+.report-export-capture-root .rcc-ring-name {
+  color: #0f172a !important;
+}
+
+.report-export-capture-root .rcc-col-sub,
+.report-export-capture-root .exec-monitor-subtitle,
+.report-export-capture-root .rcc-co-km {
+  color: #64748b !important;
+}

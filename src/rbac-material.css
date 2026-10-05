@@ -1,0 +1,99 @@
+/* RBAC admin — global Material tweaks. Toast colors + dark-theme support so the
+   admin pages follow the dashboard's light/dark toggle (data-theme on <html>). */
+
+/* ── Toast (snackbar) colors ─────────────────────────────── */
+.toast-success .mdc-snackbar__surface {
+  background: #1e8449 !important;
+}
+.toast-error .mdc-snackbar__surface {
+  background: #c0392b !important;
+}
+.toast-info .mdc-snackbar__surface {
+  background: #2d6a9f !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   DARK THEME overrides for Material inside the admin content area.
+   Scoped to .rbac-content-mode (on <app-root>) so the dashboard and
+   overlays are unaffected.
+   ───────────────────────────────────────────────────────────── */
+
+/* Cards (forms, dashboard) */
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-card {
+  --mdc-elevated-card-container-color: var(--surface);
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-card-title,
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-card-content {
+  color: var(--text-primary);
+}
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-card-subtitle {
+  color: var(--text-muted);
+}
+
+/* Tables */
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-table {
+  background: transparent;
+}
+
+/* Form fields (outlined) + selects */
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-form-field {
+  --mdc-outlined-text-field-input-text-color: var(--text-primary);
+  --mdc-outlined-text-field-label-text-color: var(--text-muted);
+  --mdc-outlined-text-field-hover-label-text-color: var(--text-secondary);
+  --mdc-outlined-text-field-caret-color: var(--text-primary);
+  --mdc-outlined-text-field-outline-color: var(--border-strong);
+  --mdc-outlined-text-field-hover-outline-color: var(--text-muted);
+  --mat-form-field-container-text-color: var(--text-primary);
+  --mat-select-trigger-text-color: var(--text-primary);
+  --mat-select-enabled-trigger-text-color: var(--text-primary);
+}
+html[data-theme='dark'] .rbac-content-mode input.mat-mdc-input-element {
+  color: var(--text-primary);
+  caret-color: var(--text-primary);
+}
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-input-element::placeholder {
+  color: var(--text-muted);
+}
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-select-value,
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-select-value-text {
+  color: var(--text-primary);
+}
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-select-arrow,
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-form-field-icon-suffix {
+  color: var(--text-muted);
+}
+
+/* Checkboxes (permission matrix) */
+html[data-theme='dark'] .rbac-content-mode .mdc-label,
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-checkbox .mdc-label {
+  color: var(--text-primary);
+}
+
+/* Slide toggle label */
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-slide-toggle .mdc-label {
+  color: var(--text-primary);
+}
+
+/* Lists (dashboard recent users / activity) */
+html[data-theme='dark'] .rbac-content-mode .mdc-list-item__primary-text,
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-list-item-title {
+  color: var(--text-primary) !important;
+}
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-list-item-line,
+html[data-theme='dark'] .rbac-content-mode .mdc-list-item__secondary-text {
+  color: var(--text-muted) !important;
+}
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-list-item .mat-icon {
+  color: var(--text-muted);
+}
+
+/* Paginator */
+html[data-theme='dark'] .rbac-content-mode .mat-mdc-paginator {
+  background: transparent;
+  color: var(--text-primary);
+  --mat-paginator-container-text-color: var(--text-primary);
+  --mat-select-trigger-text-color: var(--text-primary);
+}

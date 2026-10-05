@@ -1,0 +1,1065 @@
+/* ===== Page Layout ===== */
+.gis-map-page {
+  /* Chrome accent. Map data colours (legend, segment statusColor, ring
+     accents) are deliberately NOT driven by these — they encode meaning. */
+  --accent: #f97316;
+  --accent-strong: #ea580c;
+  --accent-soft: #fdba74;
+  --accent-ring: rgba(249, 115, 22, 0.18);
+
+  background: #0a1628;
+  height: 100vh;
+  color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+
+
+
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-group label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-apply-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: gis-filter-spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes gis-filter-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== KPI Cards ===== */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.kpi-card {
+  background: #111b2e;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpi-label {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.kpi-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.kpi-unit {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.kpi-percentage {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+/* ===== Map Container ===== */
+.map-container {
+  flex: 1 1 0;
+  min-height: 0;
+  background: #0d1f35;
+  border: 1px solid #1e3a5f;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+/* Map Controls */
+.map-controls {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: #141e30;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+/* Marker search — sits to the right of the zoom/layers stack so both keep the
+   top-left corner. Width matches the Esri widget's own default. */
+.map-search-host {
+  position: absolute;
+  top: 16px;
+  left: 70px;
+  z-index: 10;
+  width: 260px;
+}
+
+.map-control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.map-control-btn:hover:not(:disabled) {
+  background: #1e3a5f;
+  color: #ffffff;
+}
+
+/* At the min/max zoom constraint the button reads as unavailable rather than
+   silently doing nothing. */
+.map-control-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.map-control-divider {
+  height: 1px;
+  background: #1e3a5f;
+  margin: 2px 4px;
+}
+
+/* Active = menu open / action running / fullscreen on. */
+.map-control-btn.active {
+  background: #1e3a5f;
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px #3b82f6;
+}
+
+/* Basemap (Layers) menu — opens beside the control stack. */
+.map-layers-wrap {
+  position: relative;
+}
+
+.map-layers-menu {
+  position: absolute;
+  top: -4px;
+  left: 46px;
+  width: 232px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 6px;
+  background: #141e30;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  z-index: 20;
+}
+
+.map-layers-menu-title {
+  padding: 4px 8px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.map-layers-option {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.map-layers-option:hover {
+  background: #1e3a5f;
+}
+
+.map-layers-option.active {
+  background: #1d4ed8;
+}
+
+.map-layers-option-label {
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+.map-layers-option-hint {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.map-layers-option.active .map-layers-option-hint {
+  color: #dbeafe;
+}
+
+/* Transient map notice (geolocation / fullscreen failures). */
+.map-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  max-width: min(420px, calc(100% - 32px));
+  padding: 8px 14px;
+  background: rgba(20, 30, 48, 0.96);
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 12.5px;
+  text-align: center;
+  z-index: 30;
+}
+
+/* Fullscreen: the map card becomes the whole screen, so drop the card chrome. */
+.map-container:fullscreen,
+.map-container.map-fullscreen {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+}
+
+/* ArcGIS Map Host */
+.map-view-host {
+  width: 100%;
+  height: 100%;
+}
+
+/* Loading Overlay */
+.map-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(10, 22, 40, 0.7);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.map-loading-overlay span {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.map-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #1e3a5f;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error Overlay — small toast at bottom-center so it doesn't block the map */
+.map-error-overlay {
+  position: absolute;
+  bottom: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10, 22, 40, 0.92);
+  border: 1px solid #ef4444;
+  border-radius: 8px;
+  padding: 8px 16px;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+.map-error-overlay svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.map-error-overlay span {
+  font-size: 13px;
+  color: #ef4444;
+  max-width: 300px;
+  white-space: nowrap;
+}
+
+/* Map Legend */
+.map-legend {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 30, 48, 0.95);
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  backdrop-filter: blur(8px);
+}
+
+.map-segment-hint {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(20, 30, 48, 0.95);
+  border: 1px solid #1e3a5f;
+  color: #f59e0b;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.legend-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.legend-items {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-line {
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legend-label {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+/* ===== Bottom Status Bar ===== */
+.bottom-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: #111b2e;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  padding: 10px 20px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-label {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.status-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.status-sub {
+  font-size: 11px;
+  color: #10b981;
+  font-weight: 500;
+}
+
+/* ===== Details Panel Overlay ===== */
+/*
+ * Scoped to the page, NOT the viewport.
+ *
+ * This was `position: fixed; inset: 0`, which at z-index 99 also covered the
+ * app sidebar (z-index 40). While the Link Details panel was open, every
+ * sidebar click landed on this overlay instead of the nav link — it closed the
+ * panel and went nowhere, so the side menu looked dead until you clicked a
+ * second time.
+ *
+ * `absolute` anchors it to `.gis-map-page` (position: relative), so it dims and
+ * catches clicks over the map only and the nav stays reachable. The panel
+ * itself stays `fixed` — it needs the full 100vh for its slide-in.
+ */
+.details-panel-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 99;
+}
+
+/* ===== Details Panel (Right Slide-Out) ===== */
+.details-panel {
+  position: fixed;
+  top: 0;
+  right: -420px;
+  width: 400px;
+  height: 100vh;
+  background: #111b2e;
+  border-left: 1px solid #1e3a5f;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.3s ease;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.details-panel.open {
+  right: 0;
+}
+
+/* Panel Header */
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #1e3a5f;
+  flex-shrink: 0;
+}
+
+.panel-back-btn,
+.panel-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.panel-back-btn:hover,
+.panel-close-btn:hover {
+  background: #1e3a5f;
+  color: #ffffff;
+}
+
+.panel-title {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Panel Body */
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.panel-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel-body::-webkit-scrollbar-thumb {
+  background: #1e3a5f;
+  border-radius: 3px;
+}
+
+/* Link Info Header */
+.link-info-header {
+  margin-bottom: 16px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 8px;
+}
+
+.status-badge.in-progress {
+  background: rgba(249, 115, 22, 0.15);
+  color: var(--accent-soft);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.link-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+}
+
+.link-ring {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* Link Navigation */
+.link-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.nav-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #141e30;
+  border: 1px solid #1e3a5f;
+  color: #94a3b8;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.nav-arrow:hover {
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+/* Construction Photo */
+.construction-photo {
+  display: block;
+  width: 100%;
+  padding: 0;
+  background: none;
+  font: inherit;
+  cursor: zoom-in;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #1e3a5f;
+  position: relative;
+  transition: border-color 0.15s;
+}
+
+.construction-photo:hover {
+  border-color: var(--accent);
+}
+
+.construction-photo-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Detail Grid */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #1e3a5f;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: #ffffff;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+}
+
+/* Progress bar */
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.progress-text {
+  font-size: 14px;
+  color: #10b981;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.progress-bar-track {
+  width: 100%;
+  height: 6px;
+  background: #1e3a5f;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #10b981;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Panel Tabs */
+.panel-tabs {
+  display: flex;
+  border-bottom: 1px solid #1e3a5f;
+  margin-bottom: 16px;
+  gap: 0;
+}
+
+.panel-tab {
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.panel-tab:hover {
+  color: #94a3b8;
+}
+
+.panel-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Tab Content */
+.tab-content {
+  margin-bottom: 20px;
+}
+
+.tab-placeholder-text {
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+  padding: 32px 0;
+}
+
+/* Segment Info */
+.segment-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.segment-range {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.segment-type-badge {
+  background: rgba(249, 115, 22, 0.15);
+  color: var(--accent-soft);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Photo Gallery */
+.photo-gallery {
+  margin-bottom: 20px;
+}
+
+.gallery-main {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  cursor: zoom-in;
+  background: #0d1f35;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  transition: border-color 0.15s;
+}
+
+.gallery-main:hover {
+  border-color: var(--accent);
+}
+
+/* "This opens full-screen" affordance, revealed on hover. */
+.photo-zoom-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: rgba(4, 10, 20, 0.72);
+  color: #ffffff;
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+
+.construction-photo:hover .photo-zoom-badge,
+.gallery-main:hover .photo-zoom-badge {
+  opacity: 1;
+}
+
+.gallery-photo-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-counter {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.gallery-thumbnails {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+}
+
+.gallery-thumbnails::-webkit-scrollbar {
+  height: 4px;
+}
+
+.gallery-thumbnails::-webkit-scrollbar-thumb {
+  background: #1e3a5f;
+  border-radius: 2px;
+}
+
+.thumbnail {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.thumbnail:hover {
+  border-color: var(--accent);
+}
+
+.thumbnail.active {
+  border-color: var(--accent);
+}
+
+.thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Segment Details */
+.segment-details {
+  margin-bottom: 20px;
+}
+
+.segment-details h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 12px 0;
+}
+
+.segment-detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.segment-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.segment-detail-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.segment-detail-value {
+  font-size: 13px;
+  color: #ffffff;
+  text-align: right;
+  font-weight: 500;
+}
+
+/* View Link Profile Button */
+.view-link-profile-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.view-link-profile-btn:hover {
+  background: var(--accent-strong);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1400px) {
+  .kpi-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Below 1125px the page scrolls — the fixed 100vh flex layout hid the map
+   off-screen. */
+@media (max-width: 1125px) {
+  .gis-map-page {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Give the map an explicit height so it renders instead of collapsing. */
+  .map-container {
+    flex: none;
+    height: 65vh;
+    min-height: 380px;
+  }
+}
+
+@media (max-width: 900px) {
+  .kpi-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bottom-status-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .details-panel {
+    width: 100%;
+    right: -100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .gis-map-page {
+    padding: 12px;
+  }
+
+  .kpi-row {
+    grid-template-columns: 1fr;
+  }
+
+  .map-legend {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .legend-items {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+/* ── Export KMZ ── */
+
+.export-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 240px;
+  z-index: 1050;
+  background: #141e30;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  padding: 8px 0;
+}
+.export-menu .export-check,
+.export-menu .export-radio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  color: #e2e8f0;
+  font-size: 13px;
+  cursor: pointer;
+}
+.export-menu .export-check:hover,
+.export-menu .export-radio:hover { background: #1b2942; }
+.export-menu .export-check input,
+.export-menu .export-radio input { accent-color: #4f46e5; cursor: pointer; }
+.export-divider { height: 1px; background: #1e3a5f; margin: 6px 0; }
+.export-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.export-item:hover { background: #1b2942; }
+
+/* ── Segment Overview tab ── */
+.overview-list {
+  margin: 0;
+  padding: 4px 0;
+  display: flex;
+  flex-direction: column;
+}
+.overview-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 4px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+.overview-row:last-child { border-bottom: none; }
+.overview-label {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex: 0 0 auto;
+}
+.overview-value {
+  margin: 0;
+  color: #e2e8f0;
+  font-size: 13px;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Export KMZ options, opened from the breadcrumb bar's export button. */
+.export-menu-topbar {
+  position: fixed;
+  top: 48px;
+  right: 20px;
+  z-index: 1004;
+}
+
+.export-menu-title {
+  padding: 6px 16px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #94a3b8;
+}

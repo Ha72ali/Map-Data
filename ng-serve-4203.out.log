@@ -1,0 +1,53 @@
+Initial chunk files | Names                     |  Raw size
+main.js             | main                      |   1.90 MB | 
+styles.css          | styles                    | 464.78 kB | 
+polyfills.js        | polyfills                 |  88.09 kB | 
+chunk-6TTM2OHP.js   | -                         |  20.83 kB | 
+chunk-5I2EHSFR.js   | -                         |   1.46 kB | 
+chunk-4WXVOEFY.js   | -                         |   1.46 kB | 
+chunk-WC2FK552.js   | -                         | 129 bytes | 
+
+                    | Initial total             |   2.46 MB
+
+Lazy chunk files    | Names                     |  Raw size
+chunk-XJ53UFOH.js   | user-list-component       |  25.90 kB | 
+chunk-YXPBVE3W.js   | login-component           |  17.04 kB | 
+chunk-JWUAHNCR.js   | profile-component         |  15.97 kB | 
+chunk-JLCVPQN4.js   | reset-password-component  |  14.28 kB | 
+chunk-J7XN6KYS.js   | admin-dashboard-component |  14.10 kB | 
+chunk-SDZLHYBJ.js   | role-list-component       |  14.03 kB | 
+chunk-VPIXMVCO.js   | forgot-password-component |  13.71 kB | 
+chunk-WKBRLY5Y.js   | user-form-component       |  13.68 kB | 
+chunk-HHPTUWST.js   | role-form-component       |  11.66 kB | 
+chunk-QPI4BWT3.js   | change-password-component |   7.72 kB | 
+chunk-HUB524FO.js   | -                         |   2.68 kB | 
+chunk-232L7HQE.js   | placeholder-component     |   2.59 kB | 
+chunk-VXN4L6WM.js   | forbidden-component       |   2.25 kB | 
+chunk-RD57BEK3.js   | not-found-component       |   2.24 kB | 
+chunk-BKZYXTDG.js   | -                         |   1.68 kB | 
+...and 2 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [8.958 seconds]
+
+Watch mode enabled. Watching for file changes...
+  ➜  Local:   http://localhost:4203/
+Initial chunk files | Names                     | Raw size
+main.js             | main                      |  1.90 MB | 
+chunk-DE7VV3KO.js   | -                         | 20.83 kB | 
+chunk-DMCKV6OG.js   | -                         |  1.46 kB | 
+
+Lazy chunk files    | Names                     | Raw size
+chunk-EN6CY5WQ.js   | user-list-component       | 25.90 kB | 
+chunk-LDM4R6VJ.js   | login-component           | 17.04 kB | 
+chunk-FX37CZEM.js   | profile-component         | 15.97 kB | 
+chunk-ECBTTJLN.js   | admin-dashboard-component | 14.10 kB | 
+chunk-RLSNDUHW.js   | change-password-component |  7.72 kB | 
+
+Application bundle generation complete. [6.525 seconds]
+
+Page reload sent to client(s).
+
+No output file changes.
+
+Application bundle generation complete. [4.386 seconds]
+

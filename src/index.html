@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Dashboard</title>
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Angular Material icons + Roboto (used by RBAC admin screens) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    >
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    >
+  </head>
+  <body>
+    <!-- Optional: only set API_BASE_URL when the API is on a different origin than this SPA. -->
+    <!-- Local dev: leave unset — ng serve proxies /api to port 4000 (proxy.conf.json). Production same-origin: relative /api. -->
+    <script>
+      window.__env = window.__env || {};
+    </script>
+    <app-root></app-root>
+  </body>
+</html>

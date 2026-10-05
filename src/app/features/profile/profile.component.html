@@ -1,0 +1,99 @@
+<div class="profile-page" *ngIf="auth.user() as u">
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-cover"></div>
+    <div class="hero-body">
+      <div class="hero-avatar">{{ initials() }}</div>
+      <div class="hero-id">
+        <h1>{{ u.firstName }} {{ u.lastName }}</h1>
+        <div class="hero-sub">
+          <span class="role-badge">{{ u.role?.name }}</span>
+          <span class="hero-username">&#64;{{ u.username }}</span>
+        </div>
+      </div>
+      <a mat-flat-button color="primary" class="hero-action" routerLink="/change-password">
+        <mat-icon>key</mat-icon> Change Password
+      </a>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Account details -->
+    <section class="card">
+      <h3 class="card-title"><mat-icon>badge</mat-icon> Account Details</h3>
+      <ul class="detail-list">
+        <li>
+          <mat-icon>person</mat-icon>
+          <span class="d-label">Full name</span>
+          <span class="d-value">{{ u.firstName }} {{ u.lastName }}</span>
+        </li>
+        <li>
+          <mat-icon>alternate_email</mat-icon>
+          <span class="d-label">Username</span>
+          <span class="d-value">{{ u.username }}</span>
+        </li>
+        <li>
+          <mat-icon>email</mat-icon>
+          <span class="d-label">Email</span>
+          <span class="d-value">{{ u.email }}</span>
+        </li>
+        <li>
+          <mat-icon>phone</mat-icon>
+          <span class="d-label">Phone</span>
+          <span class="d-value">{{ u.phone || '—' }}</span>
+        </li>
+        <li>
+          <mat-icon>verified_user</mat-icon>
+          <span class="d-label">Status</span>
+          <span class="d-value">
+            <span class="status-pill" [class.on]="u.isActive" [class.off]="!u.isActive">{{ u.status }}</span>
+          </span>
+        </li>
+        <li>
+          <mat-icon>schedule</mat-icon>
+          <span class="d-label">Last login</span>
+          <span class="d-value">{{ u.lastLogin ? (u.lastLogin | date: 'medium') : '—' }}</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Completion + permissions -->
+    <section class="card">
+      <h3 class="card-title"><mat-icon>insights</mat-icon> Profile Completion</h3>
+      <div class="completion">
+        <svg class="ring" width="128" height="128" viewBox="0 0 128 128">
+          <circle class="ring-bg" cx="64" cy="64" r="52" />
+          <circle
+            class="ring-fg"
+            cx="64"
+            cy="64"
+            r="52"
+            [style.stroke-dasharray]="ringCirc"
+            [style.stroke-dashoffset]="ringOffset()"
+          />
+          <text x="64" y="64" class="ring-text">{{ completion() }}%</text>
+        </svg>
+        <div class="completion-copy">
+          <p>Complete your profile to get the most out of the console.</p>
+          <a mat-stroked-button routerLink="/change-password">Update details</a>
+        </div>
+      </div>
+
+      <h3 class="card-title mt"><mat-icon>lock</mat-icon> Permissions ({{ u.permissions.length }})</h3>
+      <div class="perm-groups">
+        <div class="perm-group" *ngFor="let g of permGroups()">
+          <span class="perm-group-name" [style.color]="g.color">{{ g.group }}</span>
+          <div class="perm-chips">
+            <span
+              class="perm-chip"
+              *ngFor="let p of g.items"
+              [style.background]="g.color + '18'"
+              [style.color]="g.color"
+              [style.border-color]="g.color + '33'"
+            >{{ p }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/Users/sudarshanvishwakarma/Projects/neotech/safdarbhai_work/angular-client/logs/.96e889aac415f1efe6a7ced94c91a3c6cc27da96-audit.json",
+    "files": [
+        {
+            "date": 1785134814442,
+            "name": "/Users/sudarshanvishwakarma/Projects/neotech/safdarbhai_work/angular-client/logs/app-2026-07-27.log",
+            "hash": "fc3d0f1ff3e07acfcdf15ffb869cceadf28a6e3443c85e2293419cbb52d3fc2d"
+        }
+    ],
+    "hashType": "sha256"
+}

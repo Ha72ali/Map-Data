@@ -1,0 +1,419 @@
+:root {
+  color-scheme: light;
+  /* Soft sky-blue enterprise light theme (telecom ops / SaaS analytics) */
+  --bg-main: #eef5fb;
+  --bg-card: #f8fbff;
+  --text-primary: #10243e;
+  --text-muted: #7c8fa8;
+  --border-subtle: #d7e6f4;
+  --status-track-bg: #ecfdf5;
+  --status-track-text: #047857;
+  --status-risk-bg: #fffbeb;
+  --status-risk-text: #b45309;
+  --status-delay-bg: #fff1f2;
+  --status-delay-text: #be123c;
+  --progress-track: #dce9f5;
+  --card-shadow: 0 1px 2px rgba(16, 36, 62, 0.05), 0 4px 14px rgba(59, 130, 246, 0.06);
+  /* Enterprise ops – light */
+  --bg: var(--bg-main);
+  --surface: var(--bg-card);
+  --surface-2: #f2f8fd;
+  --surface-3: #e8f2fa;
+  --surface-elevated: #f8fbff;
+  --hover-surface: #eaf4ff;
+  --text: var(--text-primary);
+  --text-secondary: #5f7390;
+  --text-tertiary: #6b8299;
+  --muted: #7c8fa8;
+  --muted-2: var(--text-muted);
+  --border: #d7e6f4;
+  --border-strong: #c5d9ec;
+  --primary: #3b82f6;
+  --primary-muted: #dbeeff;
+  --primary-hover-bg: #eaf4ff;
+  --primary-border-soft: #c5dff8;
+  --ring-blue: #3b82f6;
+  --link-green: #059669;
+  --link-green-bg: #d1fae5;
+  --step-amber: #d97706;
+  --step-amber-bg: #fef3c7;
+  --contractor-purple: #7c3aed;
+  --contractor-purple-bg: #ede9fe;
+  --success: #22c55e;
+  --success-bg: rgba(34, 197, 94, 0.12);
+  --success-text: #166534;
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.12);
+  --warning-text: #92400e;
+  --danger: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.12);
+  --danger-text: #991b1b;
+  --danger-text-strong: #b91c1c;
+  --info: #38bdf8;
+  --info-bg: #e0f2fe;
+  --info-text: #0c4a6e;
+  /* In-progress / active work on pipelines (enterprise amber — not informational blue) */
+  --ops-active: #d97706;
+  --ops-active-highlight: #f59e0b;
+  --ops-active-deep: #b45309;
+  --ops-active-bg: rgba(217, 119, 6, 0.12);
+  --ops-active-text: #92400e;
+  --accent-pink: #ec4899;
+  --accent-indigo: #6366f1;
+  --accent-violet: #8b5cf6;
+  --shadow: rgba(16, 36, 62, 0.12);
+  --shadow-sm: rgba(16, 36, 62, 0.08);
+  --shadow-md: rgba(16, 36, 62, 0.06);
+  --focus-ring: rgba(59, 130, 246, 0.14);
+  --focus-ring-indigo: rgba(59, 130, 246, 0.12);
+  --overlay-scrim: rgba(238, 245, 251, 0.92);
+  --sidebar-bg: #f8fbff;
+  --sidebar-footer-bg: #f2f8fd;
+  --sidebar-text: #10243e;
+  --sidebar-muted: #5f7390;
+  --sidebar-nav-hover: #eaf4ff;
+  --sidebar-border: #d7e6f4;
+  --sidebar-control-bg: #f8fbff;
+  --sidebar-logo-bg: #eef5fb;
+  --sidebar-active-bg: rgba(59, 130, 246, 0.1);
+  --sidebar-active-border: rgba(59, 130, 246, 0.18);
+  --sidebar-active-accent: #3b82f6;
+  --sidebar-scrollbar: rgba(95, 115, 144, 0.35);
+  --sidebar-accent: #3b82f6;
+  --avatar-bg: #3d5a7a;
+  --nav-link: #5f7390;
+  --gauge-needle: #10243e;
+  --mask-solid: #000;
+  --chart-bar-bg: #dce9f5;
+  --chat-user-bg: #f2f8fd;
+  --chat-input-bg: #f8fbff;
+  --footer-bg: #f2f8fd;
+  --toggle-track: #d7e6f4;
+  --pill-inactive-bg: #dce9f5;
+  --gradient-chat-header: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --gradient-primary-btn: linear-gradient(135deg, #3b82f6, #2563eb);
+  --gradient-map-overlay: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --gradient-purple-pink: linear-gradient(135deg, #3b82f6, #60a5fa);
+  --gradient-bar: linear-gradient(180deg, #60a5fa, #3b82f6);
+  --gradient-card-tint-1: linear-gradient(120deg, rgba(59, 130, 246, 0.06), transparent 42%);
+  --gradient-card-tint-2: linear-gradient(120deg, rgba(59, 130, 246, 0.05), transparent 42%);
+  --gradient-card-tint-3: linear-gradient(120deg, rgba(16, 185, 129, 0.06), transparent 42%);
+  --shadow-indigo: rgba(59, 130, 246, 0.22);
+  --shadow-indigo-lg: rgba(59, 130, 246, 0.28);
+  --shadow-black: rgba(16, 36, 62, 0.1);
+  --shadow-black-md: rgba(16, 36, 62, 0.14);
+  --shadow-black-lg: rgba(16, 36, 62, 0.06);
+  --white: #ffffff;
+  --black: #000000;
+  --outline-focus: var(--primary);
+  /* Heatmap table cells (theme-aware) */
+  --heat-none-bg: #f2f8fd;
+  --heat-none-fg: #7c8fa8;
+  --heat-1-bg: #fee2e2;
+  --heat-1-fg: #991b1b;
+  --heat-2-bg: #fef3c7;
+  --heat-2-fg: #92400e;
+  --heat-3-bg: #e0f2fe;
+  --heat-3-fg: #0c4a6e;
+  --heat-4-bg: #d1fae5;
+  --heat-4-fg: #166534;
+  --heat-5-bg: #bbf7d0;
+  --heat-5-fg: #14532d;
+  --glass-bg: rgba(248, 251, 255, 0.94);
+  --glass-border: rgba(215, 230, 244, 0.95);
+  --navbar-h: 56px;
+}
+
+/* Explicit light tokens when switching from dark (mirrors :root) */
+html[data-theme="light"] {
+  color-scheme: light;
+  --bg-main: #eef5fb;
+  --bg-card: #f8fbff;
+  --text-primary: #10243e;
+  --text-muted: #7c8fa8;
+  --border-subtle: #d7e6f4;
+  --progress-track: #dce9f5;
+  --card-shadow: 0 1px 2px rgba(16, 36, 62, 0.05), 0 4px 14px rgba(59, 130, 246, 0.06);
+  --bg: var(--bg-main);
+  --surface: var(--bg-card);
+  --surface-2: #f2f8fd;
+  --surface-3: #e8f2fa;
+  --surface-elevated: #f8fbff;
+  --hover-surface: #eaf4ff;
+  --text: var(--text-primary);
+  --text-secondary: #5f7390;
+  --text-tertiary: #6b8299;
+  --muted: #7c8fa8;
+  --muted-2: var(--text-muted);
+  --border: #d7e6f4;
+  --border-strong: #c5d9ec;
+  --primary: #3b82f6;
+  --primary-muted: #dbeeff;
+  --primary-hover-bg: #eaf4ff;
+  --primary-border-soft: #c5dff8;
+  --ring-blue: #3b82f6;
+  --shadow: rgba(16, 36, 62, 0.12);
+  --shadow-sm: rgba(16, 36, 62, 0.08);
+  --shadow-md: rgba(16, 36, 62, 0.06);
+  --focus-ring: rgba(59, 130, 246, 0.14);
+  --sidebar-bg: #f8fbff;
+  --sidebar-footer-bg: #f2f8fd;
+  --sidebar-text: #10243e;
+  --sidebar-muted: #5f7390;
+  --sidebar-nav-hover: #eaf4ff;
+  --sidebar-border: #d7e6f4;
+  --sidebar-control-bg: #f8fbff;
+  --sidebar-logo-bg: #eef5fb;
+  --sidebar-active-bg: rgba(59, 130, 246, 0.1);
+  --sidebar-active-border: rgba(59, 130, 246, 0.18);
+  --sidebar-active-accent: #3b82f6;
+  --sidebar-accent: #3b82f6;
+  --nav-link: #5f7390;
+  --chart-bar-bg: #dce9f5;
+  --heat-none-bg: #f2f8fd;
+  --heat-none-fg: #7c8fa8;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-main: #0b1220;
+  --bg-card: #162235;
+  --text-primary: #e2e8f0;
+  --text-muted: #64748b;
+  --status-track-bg: rgba(16, 185, 129, 0.12);
+  --status-track-text: #6ee7b7;
+  --status-risk-bg: rgba(245, 158, 11, 0.12);
+  --status-risk-text: #fcd34d;
+  --status-delay-bg: rgba(244, 63, 94, 0.12);
+  --status-delay-text: #fda4af;
+  --progress-track: #1e293b;
+  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35);
+  /* Enterprise ops – dark command center (telecom / monitor density) */
+  --bg: var(--bg-main);
+  --surface: var(--bg-card);
+  --surface-2: #111c2d;
+  --surface-3: #101827;
+  --surface-elevated: #162235;
+  --text: #e2e8f0;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --muted: #94a3b8;
+  --muted-2: #64748b;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --primary: #3b82f6;
+  --primary-muted: rgba(59, 130, 246, 0.12);
+  --primary-hover-bg: rgba(59, 130, 246, 0.2);
+  --primary-border-soft: rgba(59, 130, 246, 0.45);
+  --ring-blue: #3b82f6;
+  --link-green: #34d399;
+  --link-green-bg: rgba(16, 185, 129, 0.15);
+  --step-amber: #fbbf24;
+  --step-amber-bg: rgba(245, 158, 11, 0.15);
+  --contractor-purple: #a78bfa;
+  --contractor-purple-bg: rgba(139, 92, 246, 0.15);
+  --success: #22c55e;
+  --success-bg: rgba(34, 197, 94, 0.14);
+  --success-text: #86efac;
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.15);
+  --warning-text: #fcd34d;
+  --danger: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.15);
+  --danger-text: #fca5a5;
+  --danger-text-strong: #f87171;
+  --info: #38bdf8;
+  --info-bg: rgba(56, 189, 248, 0.12);
+  --info-text: #7dd3fc;
+  --ops-active: #f59e0b;
+  --ops-active-highlight: #fbbf24;
+  --ops-active-deep: #d97706;
+  --ops-active-bg: rgba(245, 158, 11, 0.16);
+  --ops-active-text: #fcd34d;
+  --accent-pink: #f472b6;
+  --accent-indigo: #818cf8;
+  --accent-violet: #a78bfa;
+  --shadow: rgba(0, 0, 0, 0.35);
+  --shadow-sm: rgba(0, 0, 0, 0.25);
+  --shadow-md: rgba(0, 0, 0, 0.3);
+  --focus-ring: rgba(59, 130, 246, 0.2);
+  --focus-ring-indigo: rgba(129, 140, 248, 0.2);
+  --overlay-scrim: rgba(15, 23, 42, 0.85);
+  --sidebar-bg: #0a0f18;
+  --sidebar-footer-bg: #070b12;
+  --sidebar-text: #e2e8f0;
+  --sidebar-muted: #94a3b8;
+  --sidebar-nav-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-control-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-logo-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-active-bg: rgba(56, 189, 248, 0.1);
+  --sidebar-active-border: rgba(56, 189, 248, 0.2);
+  --sidebar-active-accent: #38bdf8;
+  --sidebar-scrollbar: rgba(148, 163, 184, 0.35);
+  --sidebar-accent: #f472b6;
+  --avatar-bg: #334155;
+  --nav-link: #cbd5e1;
+  --gauge-needle: #e2e8f0;
+  --mask-solid: #000;
+  --chart-bar-bg: #334155;
+  --chat-user-bg: #1e293b;
+  --chat-input-bg: #1a1f2e;
+  --footer-bg: #1a1f2e;
+  --toggle-track: #334155;
+  --pill-inactive-bg: #334155;
+  --gradient-chat-header: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+  --gradient-primary-btn: linear-gradient(135deg, #6366f1, #ec4899);
+  --gradient-map-overlay: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --gradient-purple-pink: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --gradient-bar: linear-gradient(180deg, #60a5fa, #2563eb);
+  --gradient-card-tint-1: linear-gradient(120deg, rgba(99, 102, 241, 0.2), transparent 40%);
+  --gradient-card-tint-2: linear-gradient(120deg, rgba(14, 165, 233, 0.2), transparent 40%);
+  --gradient-card-tint-3: linear-gradient(120deg, rgba(16, 185, 129, 0.2), transparent 40%);
+  --shadow-indigo: rgba(99, 102, 241, 0.35);
+  --shadow-indigo-lg: rgba(99, 102, 241, 0.45);
+  --shadow-black: rgba(0, 0, 0, 0.4);
+  --shadow-black-md: rgba(0, 0, 0, 0.45);
+  --shadow-black-lg: rgba(0, 0, 0, 0.35);
+  --white: #f8fafc;
+  --outline-focus: #60a5fa;
+  --heat-none-bg: #1e293b;
+  --heat-none-fg: #64748b;
+  --heat-1-bg: rgba(239, 68, 68, 0.22);
+  --heat-1-fg: #fca5a5;
+  --heat-2-bg: rgba(245, 158, 11, 0.22);
+  --heat-2-fg: #fcd34d;
+  --heat-3-bg: rgba(14, 165, 233, 0.22);
+  --heat-3-fg: #7dd3fc;
+  --heat-4-bg: rgba(34, 197, 94, 0.22);
+  --heat-4-fg: #86efac;
+  --heat-5-bg: rgba(34, 197, 94, 0.35);
+  --heat-5-fg: #bbf7d0;
+  --glass-bg: rgba(20, 24, 36, 0.75);
+  --glass-border: rgba(148, 163, 184, 0.12);
+  --navbar-h: 56px;
+}
+
+html[data-theme="light"],
+html[data-theme="dark"] {
+  transition:
+    color 0.22s ease,
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+body,
+.main,
+.sidebar,
+.ops-header,
+.filters-bar,
+.kpi-tile,
+.ops-panel,
+.rollout-command-center-refined {
+  transition:
+    color 0.22s ease,
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--outline-focus);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Native <select> dark mode — popup list uses OS rendering; color-scheme + option
+   colors prevent light text on a white dropdown (Windows/Chrome).
+   -------------------------------------------------------------------------- */
+html[data-theme="dark"] .filters-bar,
+html[data-theme="dark"] .ops-filters-deck,
+html[data-theme="dark"] select,
+html[data-theme="dark"] .scope-filter-select {
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] select,
+html[data-theme="dark"] .scope-filter-select {
+  background-color: #111827;
+  color: #f8fafc;
+  border-color: var(--border-strong, rgba(255, 255, 255, 0.12));
+}
+
+html[data-theme="dark"] select:disabled,
+html[data-theme="dark"] .scope-filter-select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+html[data-theme="dark"] select option,
+html[data-theme="dark"] .scope-filter-select option {
+  background-color: #111827;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] select option:checked,
+html[data-theme="dark"] .scope-filter-select option:checked {
+  background-color: #1e3a5f;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] select option:hover,
+html[data-theme="dark"] select option:focus,
+html[data-theme="dark"] .scope-filter-select option:hover,
+html[data-theme="dark"] .scope-filter-select option:focus {
+  background-color: #1e293b;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] select optgroup {
+  background-color: #111827;
+  color: #94a3b8;
+}
+
+html[data-theme="light"] .filters-bar,
+html[data-theme="light"] .ops-filters-deck,
+html[data-theme="light"] select,
+html[data-theme="light"] .scope-filter-select {
+  color-scheme: light;
+}
+
+html[data-theme="light"] select,
+html[data-theme="light"] .scope-filter-select {
+  background-color: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme="light"] select option,
+html[data-theme="light"] .scope-filter-select option {
+  background-color: #f8fbff;
+  color: #10243e;
+}
+
+html[data-theme="light"] select option:checked,
+html[data-theme="light"] .scope-filter-select option:checked {
+  background-color: #dbeeff;
+  color: #10243e;
+}
+
+html[data-theme="light"] select option:hover,
+html[data-theme="light"] select option:focus,
+html[data-theme="light"] .scope-filter-select option:hover,
+html[data-theme="light"] .scope-filter-select option:focus {
+  background-color: #eaf4ff;
+  color: #10243e;
+}
