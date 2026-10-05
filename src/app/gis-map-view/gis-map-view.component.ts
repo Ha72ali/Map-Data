@@ -969,6 +969,8 @@ export class GisMapViewComponent implements OnInit, AfterViewInit, OnDestroy {
       this.lastSegmentResponse = merged;
       this.renderSegments(merged);
       this.reportSegmentLoad(failures, phaseIds.length, skipped, merged.routes.length);
+      if (token !== this.segmentLoadToken) return;
+      if (this.hasExplicitProjectSelection()) return;
       // Zoom to the segments so they're actually visible at any starting zoom.
       if (this.segmentGraphicsLayer?.graphics.length) {
         try {
@@ -979,6 +981,12 @@ export class GisMapViewComponent implements OnInit, AfterViewInit, OnDestroy {
       console.error('[gis-map] Segment load failed', err);
       if (token === this.segmentLoadToken) this.segmentGraphicsLayer?.removeAll();
     }
+  }
+
+  private hasExplicitProjectSelection(): boolean {
+    const selected = this.filters.selectedProjectIds.length;
+    const total = this.filters.projectOptions.length;
+    return selected > 0 && selected < total;
   }
 
   /**
