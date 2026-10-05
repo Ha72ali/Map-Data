@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["angular:styles/component:css;3e273f480757924e6f43e775c61dea8230b39a3d469bde8ec3875de2522275f5;/home/runner/work/Map-Data/Map-Data/src/app/features/errors/forbidden.component.ts"],
-  "sourcesContent": [".err { text-align: center; padding: 80px 16px; }\n     .big { font-size: 64px; height: 64px; width: 64px; color: #c0392b; }\n     h1 { margin: 12px 0 4px; }"],
-  "mappings": ";AAAA,CAAC;AAAM,cAAY;AAAQ,WAAS,KAAK;AAAM;AAC1C,CAAC;AAAM,aAAW;AAAM,UAAQ;AAAM,SAAO;AAAM,SAAO;AAAS;AACnE;AAAK,UAAQ,KAAK,EAAE;AAAK;",
-  "names": []
-}
