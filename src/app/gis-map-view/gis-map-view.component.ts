@@ -855,6 +855,16 @@ export class GisMapViewComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * True when the current filters target a specific project/link instead of
+   * the full set.
+   */
+  private hasSpecificProjectSelection(): boolean {
+    const selected = this.filters.selectedProjectIds.length;
+    const total = this.filters.projectOptions.length;
+    return selected > 0 && selected < total;
+  }
+
   private clearEsriGeoJsonLayers(): void {
     for (const url of this.mapGeoJsonObjectUrls) {
       try { URL.revokeObjectURL(url); } catch { /* noop */ }
@@ -969,8 +979,10 @@ export class GisMapViewComponent implements OnInit, AfterViewInit, OnDestroy {
       this.lastSegmentResponse = merged;
       this.renderSegments(merged);
       this.reportSegmentLoad(failures, phaseIds.length, skipped, merged.routes.length);
-      // Zoom to the segments so they're actually visible at any starting zoom.
-      if (this.segmentGraphicsLayer?.graphics.length) {
+      // Keep the selected-link focus priority: when a specific link is selected,
+      // syncMapGeoJsonLayer() already fit/zoomed to that link and a later
+      // segment-wide auto-fit must not override it.
+      if (this.segmentGraphicsLayer?.graphics.length && !this.hasSpecificProjectSelection()) {
         try {
           await this.fitMapToLayers(extentFromGraphicsLayer(this.segmentGraphicsLayer));
         } catch { /* best-effort */ }
