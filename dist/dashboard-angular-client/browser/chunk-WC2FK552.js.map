@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/core/services/api.config.ts"],
+  "sourcesContent": ["/**\n * Auth API base. Relative \"/api\" is proxied by ng serve (proxy.conf.json) to\n * the Node backend on :4000 — same-origin, so the httpOnly refresh cookie flows.\n */\nexport const API_BASE = '/api';\n"],
+  "mappings": ";AAIO,IAAM,WAAW;",
+  "names": []
+}

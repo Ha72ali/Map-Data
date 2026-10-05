@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/users/user-form/user-form.component.css"],
+  "sourcesContent": [".page-title {\n  margin: 0 0 20px;\n  font-size: 24px;\n  font-weight: 600;\n}\n.card {\n  max-width: 720px;\n}\n.row {\n  display: flex;\n  gap: 16px;\n  flex-wrap: wrap;\n}\n.row mat-form-field {\n  flex: 1 1 280px;\n}\n.actions {\n  display: flex;\n  justify-content: flex-end;\n  gap: 8px;\n  margin-top: 8px;\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,UAAQ,EAAE,EAAE;AACZ,aAAW;AACX,eAAa;AACf;AACA,CAAC;AACC,aAAW;AACb;AACA,CAAC;AACC,WAAS;AACT,OAAK;AACL,aAAW;AACb;AACA,CALC,IAKI;AACH,QAAM,EAAE,EAAE;AACZ;AACA,CAAC;AACC,WAAS;AACT,mBAAiB;AACjB,OAAK;AACL,cAAY;AACd;",
+  "names": []
+}

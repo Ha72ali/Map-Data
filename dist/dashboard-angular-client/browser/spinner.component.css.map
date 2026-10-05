@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;76759228d26ea3bb3b0f95ba66de34b5d5252d5f5d3404b5dfbc4092f532fc68;/home/runner/work/Map-Data/Map-Data/src/app/shared/components/spinner.component.ts"],
+  "sourcesContent": ["\n      .overlay {\n        position: fixed;\n        inset: 0;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        background: rgba(0, 0, 0, 0.15);\n        z-index: 2000;\n      }\n    "],
+  "mappings": ";AACM,CAAC;AACC,YAAU;AACV,SAAO;AACP,WAAS;AACT,eAAa;AACb,mBAAiB;AACjB,cAAY,KAAK,CAAC,EAAE,CAAC,EAAE,CAAC,EAAE;AAC1B,WAAS;AACX;",
+  "names": []
+}

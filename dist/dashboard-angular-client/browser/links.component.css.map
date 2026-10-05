@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/pages/links/links.component.css"],
+  "sourcesContent": [":host {\n  display: block;\n  width: 100%;\n  height: 100%;\n}\n\n.coming-soon-container {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 100vh;\n  background-color: #0a1628;\n  padding: 24px;\n}\n\n.coming-soon-content {\n  text-align: center;\n  max-width: 480px;\n}\n\n.coming-soon-icon {\n  margin-bottom: 24px;\n}\n\n.coming-soon-icon svg {\n  width: 64px;\n  height: 64px;\n  color: #3b82f6;\n}\n\n.coming-soon-title {\n  font-size: 32px;\n  font-weight: 700;\n  color: #ffffff;\n  margin: 0 0 8px 0;\n}\n\n.coming-soon-subtitle {\n  font-size: 20px;\n  font-weight: 500;\n  color: #94a3b8;\n  margin: 0 0 16px 0;\n}\n\n.coming-soon-description {\n  font-size: 14px;\n  color: #64748b;\n  margin: 0;\n  line-height: 1.6;\n}\n"],
+  "mappings": ";AAAA;AACE,WAAS;AACT,SAAO;AACP,UAAQ;AACV;AAEA,CAAC;AACC,WAAS;AACT,eAAa;AACb,mBAAiB;AACjB,cAAY;AACZ,oBAAkB;AAClB,WAAS;AACX;AAEA,CAAC;AACC,cAAY;AACZ,aAAW;AACb;AAEA,CAAC;AACC,iBAAe;AACjB;AAEA,CAJC,iBAIiB;AAChB,SAAO;AACP,UAAQ;AACR,SAAO;AACT;AAEA,CAAC;AACC,aAAW;AACX,eAAa;AACb,SAAO;AACP,UAAQ,EAAE,EAAE,IAAI;AAClB;AAEA,CAAC;AACC,aAAW;AACX,eAAa;AACb,SAAO;AACP,UAAQ,EAAE,EAAE,KAAK;AACnB;AAEA,CAAC;AACC,aAAW;AACX,SAAO;AACP,UAAQ;AACR,eAAa;AACf;",
+  "names": []
+}

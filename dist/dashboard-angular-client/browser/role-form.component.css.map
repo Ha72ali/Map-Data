@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/roles/role-form/role-form.component.css"],
+  "sourcesContent": [".page-title {\n  margin: 0 0 20px;\n  font-size: 24px;\n  font-weight: 600;\n}\n.card {\n  max-width: 760px;\n  margin-bottom: 16px;\n}\n.row {\n  display: flex;\n  gap: 20px;\n  align-items: center;\n  flex-wrap: wrap;\n}\n.row mat-form-field {\n  flex: 1 1 320px;\n}\n.full {\n  width: 100%;\n}\n.group {\n  padding: 12px 0;\n  border-bottom: 1px solid var(--border-subtle);\n}\n.group-head {\n  font-weight: 600;\n}\n.perms {\n  display: grid;\n  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));\n  gap: 6px 16px;\n  padding: 8px 0 0 28px;\n}\n.actions {\n  display: flex;\n  justify-content: flex-end;\n  gap: 8px;\n  max-width: 760px;\n}\n"],
+  "mappings": ";AAAA,CAAC;AACC,UAAQ,EAAE,EAAE;AACZ,aAAW;AACX,eAAa;AACf;AACA,CAAC;AACC,aAAW;AACX,iBAAe;AACjB;AACA,CAAC;AACC,WAAS;AACT,OAAK;AACL,eAAa;AACb,aAAW;AACb;AACA,CANC,IAMI;AACH,QAAM,EAAE,EAAE;AACZ;AACA,CAAC;AACC,SAAO;AACT;AACA,CAAC;AACC,WAAS,KAAK;AACd,iBAAe,IAAI,MAAM,IAAI;AAC/B;AACA,CAAC;AACC,eAAa;AACf;AACA,CAAC;AACC,WAAS;AACT,yBAAuB,OAAO,SAAS,EAAE,OAAO,KAAK,EAAE;AACvD,OAAK,IAAI;AACT,WAAS,IAAI,EAAE,EAAE;AACnB;AACA,CAAC;AACC,WAAS;AACT,mBAAiB;AACjB,OAAK;AACL,aAAW;AACb;",
+  "names": []
+}

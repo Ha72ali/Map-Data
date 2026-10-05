@@ -1,0 +1,28 @@
+// node_modules/@arcgis/core/views/support/layerViewUtils.js
+function n(n2) {
+  return n2 && "function" == typeof n2.highlight;
+}
+function t(n2, e, t2) {
+  return null == n2 || n2 >= t2 && (0 === e || n2 <= e);
+}
+function c(n2, e) {
+  if (e && n2) {
+    const { minScale: c2, maxScale: i2 } = n2;
+    if (u(c2, i2))
+      return t(e, c2, i2);
+  }
+  return true;
+}
+function u(n2, e) {
+  return null != n2 && n2 > 0 || null != e && e > 0;
+}
+function i(n2) {
+  return !n2?.minScale || !n2.maxScale || n2.minScale >= n2.maxScale;
+}
+
+export {
+  n,
+  c,
+  i
+};
+//# sourceMappingURL=chunk-7OJAPEH6.js.map

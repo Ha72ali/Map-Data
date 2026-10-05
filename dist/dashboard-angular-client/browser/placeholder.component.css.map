@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;dbb15c5ce17d5995204e3f7f7f89820ac31b84389023e22af04dd460a16808ca;/home/runner/work/Map-Data/Map-Data/src/app/features/placeholder/placeholder.component.ts"],
+  "sourcesContent": [".page-title { margin: 0 0 20px; font-size: 24px; font-weight: 600; }\n     .body { display: flex; align-items: center; gap: 12px; padding: 24px; opacity: 0.75; }\n     mat-icon { color: #e67e22; }"],
+  "mappings": ";AAAA,CAAC;AAAa,UAAQ,EAAE,EAAE;AAAM,aAAW;AAAM,eAAa;AAAK;AAC9D,CAAC;AAAO,WAAS;AAAM,eAAa;AAAQ,OAAK;AAAM,WAAS;AAAM,WAAS;AAAM;AACrF;AAAW,SAAO;AAAS;",
+  "names": []
+}
